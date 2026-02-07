@@ -249,7 +249,6 @@ export default function AddArticleOrEditArticle({ slug, title }: { slug: string,
                                 )}
                             />
                         </div>
-
                         <div className="flex flex-col gap-5">
                             <div className="flex gap-20">
                                 <Controller
@@ -259,34 +258,34 @@ export default function AddArticleOrEditArticle({ slug, title }: { slug: string,
                                         <FormCategory value={field.value} onChange={field.onChange} />
                                     )}
                                 />
-                                {(isEdit && user?.role === "admin") && (
+                                {user?.role === "admin" && (
                                     <div className="grid gap-2">
-                                        <Label htmlFor="category">
+                                        <Label htmlFor="status">
                                             Status
                                         </Label>
                                         <Controller
                                             name="status"
                                             control={control}
-                                            render={(({ field }) => (
-                                                <Select key={field.value} value={field.value ?? ""} onValueChange={field.onChange} >
+                                            render={({ field }) => (
+                                                <Select
+                                                    value={field.value ?? ""}
+                                                    onValueChange={field.onChange}
+                                                >
                                                     <SelectTrigger className="w-full max-w-48">
                                                         <SelectValue placeholder="Select status" />
                                                     </SelectTrigger>
-                                                    <SelectContent >
-                                                        <SelectGroup  >
-                                                            <SelectItem value={"draft"}>
-                                                                Draft
-                                                            </SelectItem>
-                                                            <SelectItem value={"published"}>
-                                                                Published
-                                                            </SelectItem>
+                                                    <SelectContent>
+                                                        <SelectGroup>
+                                                            <SelectItem value="draft">Draft</SelectItem>
+                                                            <SelectItem value="published">Published</SelectItem>
                                                         </SelectGroup>
                                                     </SelectContent>
                                                 </Select>
-                                            ))}
+                                            )}
                                         />
                                     </div>
                                 )}
+
                             </div>
                             {/* autor and editor */}
                             <div className="flex flex-col gap-5">
