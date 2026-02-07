@@ -1,0 +1,439 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Switch } from "@/components/ui/switch";
+import {
+    Plus,
+    Search,
+    MoreHorizontal,
+    Edit,
+    Trash2,
+    Eye,
+    BarChart3,
+    ImageOff,
+} from "lucide-react";
+import { toast } from "sonner";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchAds } from "@/lib/axios/actions/ads/get";
+import { SkeletonTable } from "../skeleton/table-skeleton";
+import AddAds from "./add-ads";
+import { updateStatusAds } from "@/lib/axios/actions/ads/patch";
+import EditAds from "./edit-ads";
+import { Ads } from "@/types/data";
+import { deleteAds } from "@/lib/axios/actions/ads/delete";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../ui/alert-dialog";
+import DeleteAds from "./delete-ads";
+
+
+
+type Props = {
+    ad: Ads;
+    onStatusChange: (id: string, newStatus: boolean) => void;
+};
+
+
+export function StatusToggle({ ad, onStatusChange }: Props) {
+    const mutation = useMutation({
+        mutationFn: (newStatus: boolean) => updateStatusAds(newStatus, ad.id),
+        onSuccess: (_res, newStatus) => {
+            // Update parent state
+            onStatusChange(ad.id, newStatus);
+        },
+    });
+
+    return (
+        <Switch
+            checked={ad.status}
+            onCheckedChange={(value) => mutation.mutate(value)}
+            disabled={mutation.isPending}
+        />
+    );
+}
+
+
+export default function AdsManagementContent({ adType = "header" }) {
+    const [searchQuery, setSearchQuery] = useState("");
+    const [adDialog, setAdDialog] = useState(false);
+    const [editingAd, setEditingAd] = useState<boolean>();
+    const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>();
+    const [adsId, setAdsId] = useState<string>();
+    const [adsData, setAdsData] = useState<Ads>();
+
+
+    const { data, isLoading } = useQuery({
+        queryKey: ["ads"],
+        queryFn: fetchAds
+    })
+
+    const adTypeLabels = {
+        header: "Header Ads",
+        sidebar: "Sidebar Ads",
+        inline: "Inline Ads",
+    };
+
+    const adTypeDimensions = {
+        header: "800x200",
+        sidebar: "300x600",
+        inline: "600x300",
+    };
+
+
+
+
+
+
+
+    const handleDelete = (id: any) => {
+        setAdsId(id)
+        setShowDeleteDialog(true)
+
+    };
+
+    const handleEdit = (ad: any) => {
+        setEditingAd(ad);
+        setAdDialog(true);
+    };
+
+
+
+    useEffect(() => {
+        if (data) setAdsData(data);
+    }, [data]);
+
+    const handleStatusChange = (id: string, newStatus: boolean) => {
+        setAdsData((prev) => {
+            if (!prev) return prev;
+            // If prev is an array (expected, but see lint warning), update matching ad
+            if (Array.isArray(prev)) {
+                return prev.map((ad: any) =>
+                    ad.id === id ? { ...ad, status: newStatus } : ad
+                );
+            }
+            // If prev is a single ad object, check if it matches
+            if ((prev as any).id === id) {
+                return { ...(prev as any), status: newStatus };
+            }
+            // Otherwise, return prev as is
+            return prev;
+        });
+    };
+
+    if (isLoading) return <SkeletonTable />
+    if (!data) return <p>data kosong</p>
+
+
+    console.log(adType);
+    console.log(data);
+
+
+
+
+
+
+
+    return (
+        <>
+            <Card>
+                <CardHeader>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <CardTitle>{adType}</CardTitle>
+                            <p className="text-sm text-muted-foreground mt-1">
+                                Recommended size: {adType}px
+                            </p>
+                        </div>
+                        <Button
+                            onClick={() => {
+                                setAdDialog(true);
+                            }}
+                        >
+                            <Plus className="w-4 h-4 mr-2" /> Add Ad
+                        </Button>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    {/* Search */}
+                    <div className="mb-4">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <Input
+                                placeholder="Search ads..."
+                                className="pl-9"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Ads Table */}
+                    <div className="rounded-md border">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Ad Name</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead>Placement</TableHead>
+                                    <TableHead>Period</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {data.filter((ad: Ads) => ad.placement.includes(adType)).map((ad: Ads) => (
+                                    <TableRow key={ad.id}>
+                                        <TableCell>
+                                            <div className="flex items-center gap-3">
+                                                {ad.image ? (
+                                                    <img
+                                                        src={ad.image}
+                                                        alt={ad.name}
+                                                        className="w-16 h-10 object-cover rounded"
+                                                    />
+                                                ) :
+                                                    <div className="flex justify-center items-center text-xs text-slate-500 border-dashed border w-16 h-10 object-cover rounded" >
+                                                        <ImageOff size={15} />
+                                                    </div>
+                                                }
+                                                <div>
+                                                    <p className="font-medium">{ad.name}</p>
+                                                    <p className="text-xs text-muted-foreground truncate max-w-[200px]">
+                                                        {ad.target_url}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                <StatusToggle ad={ad} onStatusChange={handleStatusChange} />
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span>{ad.placement}</span>
+                                        </TableCell>
+
+
+                                        <TableCell>
+                                            <div className="text-sm">
+                                                <div>{new Date(ad.start_date).toLocaleDateString()}</div>
+                                                <div className="text-muted-foreground">
+                                                    to {new Date(ad.end_date).toLocaleDateString()}
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                        {/* edit ads */}
+                                        <TableCell className="text-right">
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon">
+                                                        <MoreHorizontal className="w-4 h-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem onClick={() => {
+                                                        setAdsData(ad);
+                                                        setAdDialog(true);
+                                                        setEditingAd(true)
+                                                    }}>
+                                                        <Edit className="w-4 h-4 mr-2" /> Edit
+                                                    </DropdownMenuItem>
+
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem
+                                                        className="text-destructive"
+                                                        onClick={() => {
+                                                            setAdsId(ad.id)
+                                                            setShowDeleteDialog(true)
+                                                        }}
+                                                    >
+                                                        <Trash2 className="w-4 h-4 mr-2" /> Delete
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+
+                    {data.filter((ad: Ads) => ad.placement.includes(adType)).length === 0 && (
+                        <div className="text-center py-12">
+                            <p className="text-muted-foreground">No ads found</p>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+
+            {/* Edit Ad Dialog */}
+            <Dialog open={adDialog} onOpenChange={setAdDialog}>
+                <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>
+                            {editingAd ? "Edit Ad" : "Create New Ad"}
+                        </DialogTitle>
+                        <DialogDescription>
+                            {editingAd
+                                ? "Update the ad details below"
+                                : `Create a new ${adType} ad`}
+                        </DialogDescription>
+                    </DialogHeader>
+                    {(adsData || editingAd) && (
+                        <AddAds
+                            editingAd={!!editingAd}
+                            adsData={adsData as Ads}
+                            setAdDialog={setAdDialog}
+                            adType={adType}
+                        />
+                    )}
+                    {/* <form >
+                        <div className="grid gap-4 py-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="name">
+                                    Ad Name <span className="text-destructive">*</span>
+                                </Label>
+                                <Input
+                                    id="name"
+                                    name="name"
+                                    placeholder="Enter ad name"
+                                    // defaultValue={editingAd?.name}
+                                    required
+                                />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="imageUrl">
+                                    Image URL <span className="text-destructive">*</span>
+                                </Label>
+                                <Input
+                                    id="imageUrl"
+                                    name="imageUrl"
+                                    placeholder="https://example.com/image.jpg"
+                                    // defaultValue={editingAd?.imageUrl}
+                                    required
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    Recommended size: {adType}px
+                                </p>
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="targetUrl">
+                                    Target URL <span className="text-destructive">*</span>
+                                </Label>
+                                <Input
+                                    id="targetUrl"
+                                    name="targetUrl"
+                                    placeholder="https://example.com"
+                                    // defaultValue={editingAd?.targetUrl}
+                                    required
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="startDate">
+                                        Start Date <span className="text-destructive">*</span>
+                                    </Label>
+                                    <Input
+                                        id="startDate"
+                                        name="startDate"
+                                        type="date"
+                                        // defaultValue={editingAd?.startDate}
+                                        required
+                                    />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="endDate">
+                                        End Date <span className="text-destructive">*</span>
+                                    </Label>
+                                    <Input
+                                        id="endDate"
+                                        name="endDate"
+                                        type="date"
+                                        // defaultValue={editingAd?.endDate}
+                                        required
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                    setAdDialog(false);
+                                }}
+                            >
+                                Cancel
+                            </Button>
+                            <Button type="submit">
+                                {editingAd ? "Update Ad" : "Create Ad"}
+                            </Button>
+                        </DialogFooter>
+                    </form> */}
+                </DialogContent>
+            </Dialog>
+
+            {/* delete Ads */}
+            <AlertDialog open={!!showDeleteDialog} onOpenChange={(open) => setShowDeleteDialog(open)}>
+                {adsId && (
+                    <DeleteAds
+                        adsId={adsId}
+                        setShowDeleteDialog={setShowDeleteDialog as React.Dispatch<React.SetStateAction<boolean>>}
+                    />
+                )}
+            </AlertDialog>
+
+            {/* Tambah Ad Dialog */}
+
+            {/* Tambah Ad Dialog */}
+            {/* <Dialog open={adDialog} onOpenChange={setAdDialog}>
+                <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>
+                            Create New Ad
+                        </DialogTitle>
+                        <DialogDescription>
+                            Create a new ${adType} ad
+                        </DialogDescription>
+                    </DialogHeader>
+                    <AddAds setAdDialog={setAdDialog} adType={adType} />
+                </DialogContent>
+            </Dialog> */}
+        </>
+    );
+}

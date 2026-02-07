@@ -1,0 +1,36 @@
+import { ContentLayout } from "@/components/admin-panel/content-layout";
+import AdsManagementContent from "@/components/ads-management/ads-content";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import Link from "next/link";
+
+export default function Page() {
+  return (
+    <ContentLayout title="Ads Management">
+      <Breadcrumb className="pb-5">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link href="/dashboard">dashboard</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>ads management</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+      {/* isi content */}
+
+      <AdsManagementContent adType="inline" />
+
+
+    </ContentLayout>
+  );
+}
