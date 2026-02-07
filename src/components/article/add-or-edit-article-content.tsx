@@ -198,8 +198,8 @@ export default function AddArticleOrEditArticle({ slug, title }: { slug: string,
                         </div>
 
                         {/* Category & Status */}
-                        <div className="flex flex-col gap-5">
-                            <div className="flex gap-20">
+                        <div className="flex flex-col justify-center">
+                            <div className="flex justify-between md:justify-start md:gap-20">
                                 <Controller
                                     name="category_slug"
                                     control={control}
@@ -207,25 +207,28 @@ export default function AddArticleOrEditArticle({ slug, title }: { slug: string,
                                         <FormCategory value={field.value} onChange={field.onChange} />
                                     )}
                                 />
-
                                 {user?.role === "admin" && (
-                                    <Controller
-                                        name="status"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <Select value={field.value ?? ""} onValueChange={field.onChange}>
-                                                <SelectTrigger className="w-full max-w-48">
-                                                    <SelectValue placeholder="Select status" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectGroup>
-                                                        <SelectItem value="draft">Draft</SelectItem>
-                                                        <SelectItem value="published">Published</SelectItem>
-                                                    </SelectGroup>
-                                                </SelectContent>
-                                            </Select>
-                                        )}
-                                    />
+                                    <div className="flex flex-col gap-2">
+                                        <Label>Status</Label>
+                                        <Controller
+                                            name="status"
+                                            control={control}
+                                            render={({ field }) => (
+                                                <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                                                    <SelectTrigger className="w-full max-w-48">
+                                                        <SelectValue placeholder="Select status" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectGroup>
+                                                            <SelectItem value="draft">Draft</SelectItem>
+                                                            <SelectItem value="published">Published</SelectItem>
+                                                        </SelectGroup>
+                                                    </SelectContent>
+                                                </Select>
+                                            )}
+                                        />
+                                    </div>
+
                                 )}
                             </div>
                         </div>

@@ -4,8 +4,8 @@ import type { NextRequest } from "next/server";
 
 // This function can be marked `async` if using `await` inside
 export async function proxy(request: NextRequest) {
-  const token = request.cookies.get("access_token")?.value;
   const isLoginPage = request.nextUrl.pathname === "/sign-in";
+  const token = request.cookies.get("access_token")?.value;
   const JWT_SECRET = process.env.JWT_SECRET;
   // 1. Jika TIDAK ADA token dan user BUKAN di halaman login, tendang ke login
   if (!token && isLoginPage) {
@@ -31,7 +31,6 @@ export async function proxy(request: NextRequest) {
 
   // untuk debug di local host
 
-  // const isLoginPage = request.nextUrl.pathname === "/sign-in";
   // const refreshToken = request.cookies.get("refresh_token")?.value;
 
   // if (!refreshToken && !isLoginPage) {
