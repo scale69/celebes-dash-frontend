@@ -24,8 +24,11 @@ export function Menu({ isOpen }: MenuProps) {
   const pathname = usePathname();
   const menuList = getMenuList(pathname);
 
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL
+
+
   const handleLogout = () => {
-    window.location.href = "http://localhost:8000/api/auth/logout/";
+    window.location.href = `${backendUrl}auth/logout/`;
   };
 
   return (
@@ -65,7 +68,7 @@ export function Menu({ isOpen }: MenuProps) {
                               variant={
                                 (active === undefined &&
                                   pathname.startsWith(href)) ||
-                                active
+                                  active
                                   ? "secondary"
                                   : "ghost"
                               }
