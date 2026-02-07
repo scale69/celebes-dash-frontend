@@ -242,6 +242,7 @@ export default function ArticleContent() {
                 <TableHead>Title</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>Author</TableHead>
+                <TableHead>Editor</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Time</TableHead>
@@ -313,7 +314,8 @@ export default function ArticleContent() {
                       </Badge>
                     ))}
                   </TableCell> */}
-                    <TableCell>{article.pewarta}</TableCell>
+                    <TableCell>{article?.pewarta}</TableCell>
+                    <TableCell>{article?.editor}</TableCell>
                     <TableCell>
                       <Badge
                         variant={
