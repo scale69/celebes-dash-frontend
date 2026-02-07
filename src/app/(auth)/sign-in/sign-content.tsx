@@ -35,23 +35,25 @@ function SignContent() {
 
     // Menangkap pesan error dari URL (misal: redirect dari backend)
     useEffect(() => {
-        const fetchAccessToken = async () => {
-            try {
-                const res = await fetch(`${signInUrl}/auth/token/`, {
-                    credentials: "include", // untuk kirim cookie
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    setAccessToken(data.access_token); // simpan di memory/state
-                } else {
-                    router.push("/sign-in");
-                }
-            } catch (err) {
-                router.push("/sign-in");
-            }
-        };
+        // untuk debug localhost
+        // const fetchAccessToken = async () => {
+        //     try {
+        //         const res = await fetch(`${signInUrl}/auth/token/`, {
+        //             credentials: "include", // untuk kirim cookie
+        //         });
+        //         if (res.ok) {
+        //             const data = await res.json();
+        //             setAccessToken(data.access_token); // simpan di memory/state
+        //         } else {
+        //             router.push("/sign-in");
+        //         }
+        //     } catch (err) {
+        //         router.push("/sign-in");
+        //     }
+        // };
+        // fetchAccessToken();
 
-        fetchAccessToken();
+
         if (message) {
             setError(message);
         }
