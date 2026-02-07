@@ -28,6 +28,7 @@ type ArticleForm = {
     image?: FileList;
     status: string
     pewarta: string
+    image_description: string
 };
 
 
@@ -59,6 +60,7 @@ export default function AddArticleOrEditArticle({ slug, title }: { slug: string,
             status: "",
             category_slug: "",
             pewarta: "",
+            image_description: "",
             image: undefined,
         },
     })
@@ -81,6 +83,7 @@ export default function AddArticleOrEditArticle({ slug, title }: { slug: string,
         formData.append("content", data.content)
         formData.append("status", data.status)
         formData.append("pewarta", data.pewarta)
+        formData.append("image_description", data.image_description)
         tagData.forEach((tag) => {
             formData.append("tag_names", tag);
         });
@@ -123,6 +126,7 @@ export default function AddArticleOrEditArticle({ slug, title }: { slug: string,
             content: data.content ?? "",
             status: data.status ?? "",
             pewarta: data.pewarta ?? "",
+            image_description: data.image_description ?? "",
             category_slug: data.category?.slug ?? "",
         });
 
@@ -450,6 +454,17 @@ export default function AddArticleOrEditArticle({ slug, title }: { slug: string,
                                     </div>
                                 </div>
                             )}
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="title">
+                                Description Image  <span className="text-destructive">*</span>
+                            </Label>
+                            <Input
+                                id="image_description"
+                                placeholder="Enter article title"
+                                {...register('image_description')}
+                                required
+                            />
                         </div>
                         {user?.role === "author" && isEdit && data?.status == "published" ? (
                             <div className=" w-full justify-end flex gap-3 pt-4">
