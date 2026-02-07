@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form"
-import { notFound, redirect, usePathname, useRouter } from "next/navigation";
+import { redirect, usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,6 +27,7 @@ type ArticleForm = {
     category_slug: string
     image?: FileList;
     status: string
+    pewarta: string
 };
 
 
@@ -57,6 +58,7 @@ export default function AddArticleOrEditArticle({ slug, title }: { slug: string,
             content: "",
             status: "",
             category_slug: "",
+            pewarta: "",
             image: undefined,
         },
     })
@@ -78,6 +80,7 @@ export default function AddArticleOrEditArticle({ slug, title }: { slug: string,
         formData.append("title", data.title)
         formData.append("content", data.content)
         formData.append("status", data.status)
+        formData.append("pewarta", data.pewarta)
         tagData.forEach((tag) => {
             formData.append("tag_names", tag);
         });
@@ -119,6 +122,7 @@ export default function AddArticleOrEditArticle({ slug, title }: { slug: string,
             title: data.title ?? "",
             content: data.content ?? "",
             status: data.status ?? "",
+            pewarta: data.pewarta ?? "",
             category_slug: data.category?.slug ?? "",
         });
 
@@ -251,7 +255,7 @@ export default function AddArticleOrEditArticle({ slug, title }: { slug: string,
                                         <FormCategory value={field.value} onChange={field.onChange} />
                                     )}
                                 />
-                                {isEdit && (
+                                {(isEdit && user?.role === "admin") && (
                                     <div className="grid gap-2">
                                         <Label htmlFor="category">
                                             Status
@@ -281,24 +285,30 @@ export default function AddArticleOrEditArticle({ slug, title }: { slug: string,
                                 )}
                             </div>
                             {/* autor and editor */}
-                            <div className="flex gap-5">
+                            <div className="flex flex-col gap-5">
                                 {/* author */}
-                                <div className="flex space-x-4  items-center">
-                                    <Label htmlFor="author">
-                                        Author :
+                                <div className="flex flex-col gap-2 w-full">
+                                    <Label htmlFor="pwarta">
+                                        Pewarta :
                                     </Label>
-                                    <span className="border text-sm w-max px-4 py-1 rounded-sm border-dashed">
-                                        {isEdit ? data?.author?.username : user?.username}
-                                    </span>
+                                    {/* <span className="border text-sm w-max px-4 py-1 rounded-sm border-dashed">
+                                        {isEdit ? data?.pewarta : user?.username}
+                                    </span> */}
+                                    <Input
+                                        id="pewarta"
+                                        placeholder="Enter article title"
+                                        {...register('pewarta')}
+                                        required
+                                    />
                                 </div>
                                 {/* editor */}
-                                {isEdit && (
-                                    <div className="flex space-x-4  items-center">
-                                        <Label htmlFor="author">
+                                {(isEdit && user?.role === "admin") && (
+                                    <div className="flex space-x-4 items-center">
+                                        <Label htmlFor="editor">
                                             Editor :
                                         </Label>
                                         <span className="border text-sm w-max px-4 py-1 rounded-sm border-dashed">
-                                            {data?.editor}
+                                            {user?.username}
                                         </span>
                                     </div>
                                 )}

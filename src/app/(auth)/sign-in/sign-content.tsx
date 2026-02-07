@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertCircle } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 // --- KOMPONEN UTAMA (Yang dipanggil oleh Next.js) ---
 export default function SignInPage() {
@@ -23,7 +23,10 @@ export default function SignInPage() {
 function SignContent() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
+    const [accessToken, setAccessToken] = useState<string | null>(null);
 
+
+    const router = useRouter();
     const signInUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL;
 
     // Get message from searchParams
@@ -32,9 +35,27 @@ function SignContent() {
 
     // Menangkap pesan error dari URL (misal: redirect dari backend)
     useEffect(() => {
+        const fetchAccessToken = async () => {
+            try {
+                const res = await fetch(`${signInUrl}/auth/token/`, {
+                    credentials: "include", // untuk kirim cookie
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setAccessToken(data.access_token); // simpan di memory/state
+                } else {
+                    router.push("/sign-in");
+                }
+            } catch (err) {
+                router.push("/sign-in");
+            }
+        };
+
+        fetchAccessToken();
         if (message) {
             setError(message);
         }
+
     }, [message]);
 
     const handleGoogleLogin = async () => {

@@ -70,6 +70,9 @@ export default function AddOrEditUser({ user, isOpen, onClose, onSave, editingUs
             }
         })
     }
+
+    const isSubmitting = mutation.isPending;
+
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -143,7 +146,7 @@ export default function AddOrEditUser({ user, isOpen, onClose, onSave, editingUs
                         <Button type="button" variant="outline" onClick={onClose}>
                             Cancel
                         </Button>
-                        <Button type="submit">
+                        <Button disabled={isSubmitting} type="submit">
                             {user?.id ? "Update User" : "Create User"}
                         </Button>
                     </DialogFooter>

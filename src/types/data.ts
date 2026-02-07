@@ -21,6 +21,7 @@ export interface ResultArtilce {
   id: string;
   editor: string;
   author: Author;
+  pewarta: string;
   category: Category;
   tags: Tag[];
   created_at: Date;
