@@ -28,7 +28,8 @@ export async function proxy(request: NextRequest) {
   //   response.cookies.delete("access_token");
   //   return response;
   // }
-  // 3. Jika semuanya OK (punya token dan akses halaman selain login), biarkan LANJUT
+
+  // ini ver 2
 
   const isLoginPage = request.nextUrl.pathname === "/sign-in";
   const refreshToken = request.cookies.get("refresh_token")?.value;
