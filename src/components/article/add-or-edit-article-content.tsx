@@ -184,20 +184,18 @@ export default function AddArticleOrEditArticle({ slug, title }: { slug: string,
                         </div>
 
                         {/* Content */}
-                        {data && (
-                            <div className="grid gap-2">
-                                <Label>Content <span className="text-destructive">*</span></Label>
-                                <Controller
-                                    name="content"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <Suspense fallback={<div>Loading editor...</div>}>
-                                            <RichTextEditor content={field.value ?? ""} onChange={field.onChange} />
-                                        </Suspense>
-                                    )}
-                                />
-                            </div>
-                        )}
+                        <div className="grid gap-2">
+                            <Label>Content <span className="text-destructive">*</span></Label>
+                            <Controller
+                                name="content"
+                                control={control}
+                                render={({ field }) => (
+                                    <Suspense fallback={<div>Loading editor...</div>}>
+                                        <RichTextEditor content={field.value ?? ""} onChange={field.onChange} />
+                                    </Suspense>
+                                )}
+                            />
+                        </div>
 
                         {/* Category & Status */}
                         <div className="flex flex-col gap-5">
