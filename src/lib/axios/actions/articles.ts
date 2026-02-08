@@ -3,7 +3,7 @@
 import { BackendError, DeletePayload } from "@/types/data";
 import axiosInstance from "../instance";
 
-export async function fetchArticles(page: Number) {
+export async function fetchArticles(page: number) {
   const instance = await axiosInstance();
   try {
     const res = await instance.get(`articles/?page=${page}`);
