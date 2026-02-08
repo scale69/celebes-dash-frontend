@@ -3,10 +3,10 @@
 import { BackendError, DeletePayload } from "@/types/data";
 import axiosInstance from "../instance";
 
-export async function fetchArticles() {
+export async function fetchArticles(page: Number) {
   const instance = await axiosInstance();
   try {
-    const res = await instance.get(`articles/`);
+    const res = await instance.get(`articles/?page=${page}`);
     return res.data;
   } catch (error) {
     if (error instanceof Error) {
@@ -93,15 +93,13 @@ export async function deleteBySlugAction(slug: String) {
   }
 }
 
-
 export const postArticle = async (formData: FormData) => {
   const instance = await axiosInstance();
   try {
-
     const res = await instance.post(`articles/`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
-      }
+      },
     });
     return res.data;
   } catch (error) {
@@ -111,16 +109,15 @@ export const postArticle = async (formData: FormData) => {
       console.log("An unknown error occurred"); // Menangani kesalahan yang tidak terduga
     }
   }
-}
+};
 
 export const editArticle = async (formData: FormData, slug: string) => {
   const instance = await axiosInstance();
   try {
-
     const res = await instance.patch(`articles/${slug}/`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
-      }
+      },
     });
     return res.data;
   } catch (error) {
@@ -130,6 +127,4 @@ export const editArticle = async (formData: FormData, slug: string) => {
       console.log("An unknown error occurred"); // Menangani kesalahan yang tidak terduga
     }
   }
-}
-
-
+};

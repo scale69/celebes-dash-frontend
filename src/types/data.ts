@@ -1,8 +1,10 @@
 export interface ArticlesResponse {
-  next: null;
+  count: number;
+  next: string;
   previous: null;
   results: ResultArtilce[];
 }
+
 export interface UserResponse {
   next: null;
   previous: null;
@@ -87,4 +89,12 @@ export interface Ads {
   end_date: string;
   image: string;
   status: boolean;
+}
+
+export interface PropsData {
+  data: {
+    count: number;
+    next: string | null;
+    previous: string | null;
+  };
 }

@@ -56,7 +56,7 @@ import {
   ChevronRight,
   ArrowLeft,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { SkeletonArticles } from "../skeleton/article-skeleton";
 import { ArticlesResponse, Category, ResultArtilce, Tag } from "@/types/data";
@@ -68,27 +68,26 @@ import {
   fetchArticles,
 } from "@/lib/axios/actions/articles";
 import { toast } from "sonner";
-import { useDeleteAction } from "@/lib/axios/actions/delete-multiple";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import PaginationComponent from "../layout/pagination";
 export default function ArticleContent() {
   const [showPreview, setShowPreview] = useState(false);
-  const [selected, setSelected] = useState<String[]>([]);
   const [filteredArticles, setFilteredArticles] = useState<String>("");
   const queryClient = useQueryClient();
-
   const router = useRouter()
+  const searchParams = useSearchParams()
 
+  const page = useMemo(() => {
+    const pg = Number(searchParams.get("page"))
+    return isNaN(pg) || pg < 1 ? 1 : pg
+  }, [searchParams])
 
+  const { data, isLoading, isError } = useQuery<ArticlesResponse>({
+    queryKey: ["articles", page],
+    queryFn: () => fetchArticles(page),
 
-
-
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["articles"],
-    queryFn: fetchArticles,
   });
-
-  const { mutate: deleteMutation } = useDeleteAction();
 
   if (filteredArticles === "all") {
     setFilteredArticles("");
@@ -99,42 +98,7 @@ export default function ArticleContent() {
 
 
 
-
-
-  // const showDeleteButton = () => {
-  //   if (selected.length === 0) return false;
-
-  //   // Ambil item yang dipilih
-  //   const selectedItems = data.results.filter((item) =>
-  //     selected.includes(item.id)
-  //   );
-
-  //   // 🔥 ADMIN: jika ada SATU artikel ditulis admin, tombol tampil
-  //   if (selectedItems.some((item) => item.author.role === "admin")) {
-  //     return true;
-  //   }
-
-  //   // ✍️ AUTHOR: hanya boleh jika SEMUA draft
-  //   if (currentUserRole === "author") {
-  //     return selectedItems.every((item) => item.status === "draft");
-  //   }
-
-  //   // Role lain tidak boleh
-  //   return false;
-  // };
-
-  const handleBulkDelete = () => {
-    if (selected.length === 0) {
-      return toast.error("Tidak ada artikel yang di pilih");
-    }
-    deleteMutation({
-      url: "articles/bulk-delete/",
-      data: { ids: selected },
-    });
-    setSelected([]);
-  };
   const handleDleteByID = async (slug: string) => {
-    console.log(slug);
     try {
       const data = await deleteBySlugAction(slug);
       toast.success("Berhasil menghapus data");
@@ -178,42 +142,10 @@ export default function ArticleContent() {
                   <SelectItem value="draft">Drafts</SelectItem>
                 </SelectContent>
               </Select>
-              {/* handle delete  select */}
-              {/* {selected.length > 0 && (
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">
-                  {selected.length} selected
-                </span>
-                {showDeleteButton() && (
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => handleBulkDelete()}
-                  >
-                    Delete
-                  </Button>
-                )}
-              </div>
-            )} */}
-              {/* {selected.length > 0 && (
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">
-                  {selected.length} selected
-                </span>
-
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  onClick={() => handleBulkDelete()}
-                >
-                  Delete
-                </Button>
-              </div>
-            )} */}
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">
-                {data.results.length} articles
+                {data?.results.length} articles
               </span>
             </div>
           </div>
@@ -222,22 +154,6 @@ export default function ArticleContent() {
           <Table>
             <TableHeader>
               <TableRow>
-                {/* <TableHead className="w-12">
-                  checkbox all  (nanti di perbaiki untuk pengemabngan yang baik)
-                  <Checkbox
-                  checked={
-                    selected.length === data.results.length &&
-                    data.results.length > 0
-                  }
-                  onCheckedChange={(checked) =>
-                    setSelected(
-                      checked
-                        ? data.results.map((a: ResultArtilce) => a.id)
-                        : []
-                    )
-                  }
-                />
-                </TableHead> */}
                 <TableHead></TableHead>
                 <TableHead>Title</TableHead>
                 <TableHead>Category</TableHead>
@@ -250,7 +166,7 @@ export default function ArticleContent() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data.results
+              {data?.results
                 .filter(
                   (article: ResultArtilce) =>
                     article.status === filteredArticles || filteredArticles === ""
@@ -277,18 +193,6 @@ export default function ArticleContent() {
                       </span>
 
                     </TableCell>
-                    {/* <TableCell>
-                      <Checkbox
-                      checked={selected.includes(String(article.id))}
-                      onCheckedChange={(checked) =>
-                        setSelected((prev: String[]) =>
-                          checked
-                            ? [...prev, article.id]
-                            : prev.filter((id: String) => id !== article.id)
-                        )
-                      }
-                    />
-                    </TableCell> */}
                     <TableCell className="font-medium  max-w-[200px] truncate">
                       {article.title}
                     </TableCell>
@@ -304,16 +208,6 @@ export default function ArticleContent() {
                         {article.category?.name || "No Category"}
                       </Badge>
                     </TableCell>
-                    {/* <TableCell>
-                    {article.tags.map((tag: Tag) => (
-                      <Badge key={tag.id}
-                        className="border-dashed text-[10px] rounded-sm"
-                        variant="outline"
-                      >
-                        {tag.name || "No tags"}
-                      </Badge>
-                    ))}
-                  </TableCell> */}
                     <TableCell>{article?.pewarta}</TableCell>
                     <TableCell>{article?.editor}</TableCell>
                     <TableCell>
@@ -348,17 +242,10 @@ export default function ArticleContent() {
                               <Edit className="w-4 h-4 mr-2" /> Edit
                             </Link>
                           </DropdownMenuItem>
-                          {/* <DropdownMenuItem
-                          //  onClick={() => handlePreview(article)}
-                          >
-                            <Eye className="w-4 h-4 mr-2" /> Preview
-                          </DropdownMenuItem> */}
                           <DropdownMenuSeparator />
-                          {/* delete */}
                           <DropdownMenuItem
                             className="text-destructive"
                             asChild
-
                           >
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
@@ -391,12 +278,12 @@ export default function ArticleContent() {
                 ))}
             </TableBody>
           </Table>
-          {data.results.length === 0 && <NoData />}
-          {/* <Pagination
-            currentPage={articlePage}
-            totalPages={totalPages}
-            onPageChange={setArticlePage}
-          /> */}
+          {data?.results.length === 0 && <NoData />}
+          {data && (
+            <PaginationComponent
+              data={data}
+            />
+          )}
         </CardContent>
 
         {/* Preview Dialog */}
@@ -409,15 +296,12 @@ export default function ArticleContent() {
               </DialogDescription>
             </DialogHeader>
 
-            {/* {previewArticle && ( */}
-            {data.results.map((article: ResultArtilce) => (
+            {data?.results.map((article: ResultArtilce) => (
               <div className="space-y-6">
-                {/* Article Header */}
                 <div className="space-y-4">
                   <h1 className="text-3xl font-bold leading-tight">
                     {article.title}
                   </h1>
-
                   {/* Metadata */}
                   <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                     <div className="flex items-center gap-2">
@@ -426,130 +310,19 @@ export default function ArticleContent() {
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      {/* <Badge
-                        variant="outline"
-                        style={{
-                          borderColor: categories.find(
-                            (c) => c.slug === previewArticle.category
-                          )?.color,
-                        }}
-                      >
-                        {previewArticle.category}
-                      </Badge> */}
                     </div>
                     <div>
-                      {/* {new Date(previewArticle.createdAt).toLocaleDateString(
-                      "en-US",
-                      {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      }
-                    )} */}
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Eye className="w-4 h-4" />
-                      <span>
-                        {/* {previewArticle.views?.toLocaleString() || 0} views */}
-                      </span>
-                    </div>
+
                   </div>
                 </div>
-
-                {/* Featured Image */}
-                {/* {previewArticle.featuredImage && (
-                  <div className="rounded-lg overflow-hidden border">
-                    <img
-                      src={previewArticle.featuredImage}
-                      alt={previewArticle.title}
-                      className="w-full h-auto object-cover max-h-96"
-                    />
-                  </div>
-                )} */}
-
-                {/* Article Content */}
-                {/* <div className="prose prose-sm max-w-none">
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: previewArticle.content || '<p>No content available</p>'
-                    }}
-                    className="text-base leading-relaxed"
-                  />
-                </div> */}
-
-                {/* Tags if available */}
-                {/* {previewArticle.tags && previewArticle.tags.length > 0 && (
-                  <div className="pt-4 border-t">
-                    <h3 className="text-sm font-medium mb-2">Tags:</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {previewArticle.tags.map((tag, index) => (
-                        <Badge key={index} variant="secondary">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )} */}
-
-                {/* Status Badge */}
-                {/* <div className="pt-4 border-t flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">Status:</span>
-                    <Badge
-                      variant={
-                        previewArticle.status === "published"
-                          ? "default"
-                          : previewArticle.status === "draft"
-                            ? "secondary"
-                            : "outline"
-                      }
-                    >
-                      {previewArticle.status}
-                    </Badge>
-                  </div>
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowPreview(false)}
-                  >
-                    Close Preview
-                  </Button>
-                </div> */}
               </div>
             ))}
-            {/* )} */}
           </DialogContent>
         </Dialog>
 
-        {/* Delete Confirmation Dialog */}
-        {/* <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete Article</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to delete this article? This action cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDeleteArticle}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog> */}
       </Card>
     </div>
 
   );
 }
-
-// <ul>
-//     {data.map((data)=> (
-//         <li>
-//             今日 {data.date}
-//         </li>
-//     ))}
-// </ul>

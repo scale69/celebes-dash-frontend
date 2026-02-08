@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
     Table,
@@ -12,6 +13,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -29,17 +31,28 @@ import {
 } from "@/components/ui/dialog";
 import {
     AlertDialog,
-
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 
+import { Label } from "@/components/ui/label";
 import {
-
+    Plus,
+    Search,
     MoreHorizontal,
     Edit,
     Trash2,
     Tag as TagIcon,
+    Hash,
 } from "lucide-react";
+import { toast } from "sonner";
 import { fetchTags } from "@/lib/axios/actions/tags/get";
 import { useQuery } from "@tanstack/react-query";
 import { Tag } from "@/types/data";
@@ -63,6 +76,7 @@ export default function TagsContent() {
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
     // Form states
+    const [editingTag, setEditingTag] = useState(null);
     const [tagId, setTagId] = useState<string>("");
     const [selectedTag, setSelectedTag] = useState<TagFormData>();
 
@@ -78,16 +92,69 @@ export default function TagsContent() {
         queryFn: () => fetchTags(page)
     })
 
+    // Filter tags
+    // const filteredTags = data.filter((tag: Tag) =>
+    //     tag.name.toLowerCase().includes(searchQuery.toLowerCase())
+    // );
 
 
 
+    // Handlers
+
+
+    const handleEditClick = (tag: any) => {
+        setEditingTag(tag);
+        // setFormData({
+        //     name: tag.name,
+        //     color: tag.color,
+        // });
+        setShowEditDialog(true);
+    };
+
+    const handleEditTag = (e: any) => {
+        // e.preventDefault();
+        // setTags(
+        //     tags.map((tag) =>
+        //         tag.id === editingTag.id
+        //             ? {
+        //                 ...tag,
+        //                 name: formData.name.toLowerCase().trim(),
+        //                 slug: formData.name.toLowerCase().trim().replace(/\s+/g, "-"),
+        //                 color: formData.color,
+        //             }
+        //             : tag
+        //     )
+        // );
+        // toast.success("Tag updated successfully!");
+        // setShowEditDialog(false);
+        // setEditingTag(null);
+        // setFormData({ name: "", color: "#3b82f6" });
+    };
 
     const handleDeleteClick = (id: string) => {
         setTagId(id);
         setShowDeleteDialog(true);
     };
 
+    const handleDeleteTag = () => {
+        // setTags(tags.filter((tag) => tag.id !== deleteTagId));
+        // toast.success("Tag deleted successfully!");
+        // setShowDeleteDialog(false);
+        // setDeleteTagId(null);
+    };
 
+    const handleBulkDelete = () => {
+        // if (selectedTags.length === 0) {
+        //     toast.error("No tags selected");
+        //     return;
+        // }
+        // setTags(tags.filter((tag) => !selectedTags.includes(tag.id)));
+        // toast.success(`${selectedTags.length} tags deleted!`);
+        // setSelectedTags([]);
+    };
+
+    // Calculate total articles
+    // const totalArticles = data.reduce((sum : number, tag : Tag) => sum + tag.articleCount, 0);
 
     if (isLoading) return <SkeletonTable />
     if (!data) return null
@@ -102,19 +169,47 @@ export default function TagsContent() {
                         Manage article tags
                     </p>
                 </div>
-
+                {/* <Button onClick={() => setShowAddDialog(true)}>
+                    <Plus className="w-4 h-4 mr-2" /> Add Tag
+                </Button> */}
             </div>
+
+
 
             {/* Tags Table */}
             <Card>
                 <CardHeader>
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-
+                        {/* <div className="flex items-center gap-2">
+                            {selectedTags.length > 0 && (
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm text-muted-foreground">
+                                        {selectedTags.length} selected
+                                    </span>
+                                    <Button
+                                        size="sm"
+                                        variant="destructive"
+                                        onClick={handleBulkDelete}
+                                    >
+                                        Delete Selected
+                                    </Button>
+                                </div>
+                            )}
+                        </div> */}
                         <div className="flex items-center gap-2">
                             <span className="text-sm text-muted-foreground">
                                 {data.length} tags
                             </span>
-
+                            {/* search button */}
+                            {/* <div className="relative">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                <Input
+                                    placeholder="Search tags..."
+                                    className="pl-9 w-64"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                            </div> */}
                         </div>
                     </div>
                 </CardHeader>
@@ -122,6 +217,19 @@ export default function TagsContent() {
                     <Table >
                         <TableHeader>
                             <TableRow>
+                                {/* <TableHead className="w-12">
+                                    <Checkbox
+                                    checked={
+                                        selectedTags.length === data.length &&
+                                        data.length > 0
+                                    }
+                                    onCheckedChange={(checked) =>
+                                        setSelectedTags(
+                                            checked ? filteredTags.map((t) => t.id) : []
+                                        )
+                                    }
+                                    />
+                                </TableHead> */}
                                 <TableHead>Tag</TableHead>
                                 <TableHead>Slug</TableHead>
                                 <TableHead>Articles</TableHead>
@@ -132,6 +240,18 @@ export default function TagsContent() {
                         <TableBody >
                             {data?.results.map((tag: Tag) => (
                                 <TableRow key={tag.id} >
+                                    {/* <TableCell>
+                                        <Checkbox
+                                        checked={selectedTags.includes(tag.id)}
+                                        onCheckedChange={(checked) =>
+                                            setSelectedTags((prev) =>
+                                                checked
+                                                    ? [...prev, tag.id]
+                                                    : prev.filter((id) => id !== tag.id)
+                                            )
+                                        }
+                                        />
+                                    </TableCell> */}
                                     <TableCell>
                                         <Badge
                                             variant="secondary"
