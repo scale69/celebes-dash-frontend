@@ -15,10 +15,19 @@ import { SkeletonArticles } from "../skeleton/article-skeleton";
 import { ResultArtilce } from "@/types/data";
 import { Badge } from "@/components/ui/badge";
 import { fetchArticles } from "@/lib/axios/actions/articles";
+import { useSearchParams } from "next/navigation";
+import { useMemo } from "react";
 export default function RecentArticlesPendingViews() {
+  const searchParams = useSearchParams()
+
+  const page = useMemo(() => {
+    const pg = Number(searchParams.get("page"))
+    return isNaN(pg) || pg < 1 ? 1 : pg
+  }, [searchParams])
+
   const { data, isLoading, isError } = useQuery({
     queryKey: ["articles"],
-    queryFn: fetchArticles,
+    queryFn: () => fetchArticles(page),
   });
 
   if (isLoading) return <SkeletonArticles />;

@@ -36,7 +36,7 @@ import {
   Trash2,
   ArrowLeft,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ResultArtilce } from "@/types/data";
 import { SkeletonTable } from "../skeleton/table-skeleton";
@@ -47,18 +47,24 @@ import {
 } from "@/lib/axios/actions/articles";
 import { toast } from "sonner";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 
 export default function ArticleContentDraftAndPublished({ status, title }: { status: string, title: string }) {
   const [filteredArticles, setFilteredArticles] = useState<String>("");
   const queryClient = useQueryClient();
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  const page = useMemo(() => {
+    const pg = Number(searchParams.get("page"))
+    return isNaN(pg) || pg < 1 ? 1 : pg
+  }, [searchParams])
 
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["articles"],
-    queryFn: fetchArticles,
+    queryFn: () => fetchArticles(page),
   });
 
   if (filteredArticles === "all") {
