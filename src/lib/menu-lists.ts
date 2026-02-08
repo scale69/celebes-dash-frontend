@@ -31,7 +31,7 @@ type Group = {
 };
 
 export function getMenuList(pathname: string): Group[] {
-  const {user} = useUser()
+  const { user } = useUser();
   return [
     {
       groupLabel: "",
@@ -39,7 +39,7 @@ export function getMenuList(pathname: string): Group[] {
         {
           href: "/dashboard",
           label: "Dashboard",
-          icon: LayoutGrid, 
+          icon: LayoutGrid,
           submenus: [],
         },
       ],
@@ -50,7 +50,7 @@ export function getMenuList(pathname: string): Group[] {
         {
           href: "",
           label: "Posts",
-          icon: SquarePen, 
+          icon: SquarePen,
           submenus: [
             {
               href: "/articles",
@@ -73,18 +73,18 @@ export function getMenuList(pathname: string): Group[] {
         {
           href: "/categories",
           label: "Categories",
-          icon: Bookmark, 
+          icon: Bookmark,
         },
         {
           href: "/tags",
           label: "Tags",
-          icon: Tag, 
+          icon: Tag,
         },
-        {
-          href: "/gallery",
-          label: "Gallery",
-          icon: Image, 
-        },
+        // {
+        //   href: "/gallery",
+        //   label: "Gallery",
+        //   icon: Image,
+        // },
       ],
     },
     ...(user?.role === "admin"
@@ -114,9 +114,8 @@ export function getMenuList(pathname: string): Group[] {
             ],
           },
         ]
-      : []
-    ),
-    
+      : []),
+
     // Hanya admin yang bisa akses menu Settings
     ...(user?.role === "admin"
       ? [
@@ -126,29 +125,28 @@ export function getMenuList(pathname: string): Group[] {
               {
                 href: "/users",
                 label: "Users / Authors",
-                icon: Users, 
+                icon: Users,
               },
               {
                 href: "/settings",
                 label: "Settings",
-                icon: Settings, 
+                icon: Settings,
               },
             ],
           },
         ]
       : [
-        {
-          groupLabel: "Settings",
-          menus: [
-            {
-              href: "/users",
-              label: "Account",
-              icon: Users, 
-            }
-          ],
-        },
-      ]
-    ),
+          {
+            groupLabel: "Settings",
+            menus: [
+              {
+                href: "/users",
+                label: "Account",
+                icon: Users,
+              },
+            ],
+          },
+        ]),
   ];
 
   // return [

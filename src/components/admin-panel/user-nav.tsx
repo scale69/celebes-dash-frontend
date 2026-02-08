@@ -20,8 +20,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useUser } from "@/lib/axios/actions/users/useUser";
 
 export function UserNav() {
+
+  const { user } = useUser()
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL
+
+  const handleLogout = () => {
+    window.location.href = `${backendUrl}auth/logout/`;
+  };
   return (
     <DropdownMenu>
       <TooltipProvider disableHoverableContent>
@@ -34,7 +42,14 @@ export function UserNav() {
               >
                 <Avatar className="h-8 w-8">
                   <AvatarImage src="#" alt="Avatar" />
-                  <AvatarFallback className="bg-transparent">JD</AvatarFallback>
+                  <AvatarFallback className="bg-transparent">
+                    {user?.username
+                      ? user.username
+                        .split(" ")
+                        .map((n: string) => n[0]?.toUpperCase())
+                        .join("")
+                      : ""}
+                  </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
@@ -46,9 +61,9 @@ export function UserNav() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">John Doe</p>
+            <p className="text-sm font-medium leading-none">{user?.username}</p>
             <p className="text-xs leading-none text-muted-foreground">
-              johndoe@example.com
+              {user?.email}
             </p>
           </div>
         </DropdownMenuLabel>
@@ -62,7 +77,7 @@ export function UserNav() {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="hover:cursor-pointer" onClick={() => {}}>
+        <DropdownMenuItem className="hover:cursor-pointer" onClick={handleLogout}>
           <LogOut className="w-4 h-4 mr-3 text-muted-foreground" />
           Sign out
         </DropdownMenuItem>
