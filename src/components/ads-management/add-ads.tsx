@@ -11,6 +11,8 @@ import { toast } from "sonner";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Ads } from "@/types/data";
 import { updateAds } from "@/lib/axios/actions/ads/patch";
+import { X } from "lucide-react";
+import { Spinner } from "../ui/spinner";
 
 export default function AddAds({
     adType,
@@ -27,7 +29,7 @@ export default function AddAds({
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-    const { register, handleSubmit, control, reset } = useForm<AdsFormData>({
+    const { register, handleSubmit, control, reset, setValue } = useForm<AdsFormData>({
         defaultValues: {
             name: "",
             placement: "",
@@ -51,7 +53,28 @@ export default function AddAds({
             }
         },
     })
+    useEffect(() => {
+        if (!adsData) return
+        reset({
+            name: adsData?.name || "",
+            placement: adsData?.placement || "",
+            target_url: adsData?.target_url || "",
+            start_date: adsData?.start_date || "",
+            end_date: adsData?.end_date || "",
 
+        })
+
+        setImagePreview(adsData?.image || null);
+        setImageFile(null);
+
+
+    }, [adsData, reset])
+    // Cleanup image preview
+    useEffect(() => {
+        return () => {
+            if (imagePreview) URL.revokeObjectURL(imagePreview);
+        };
+    }, [imagePreview]);
 
     const onSubmiting = (data: AdsFormData) => {
         const formData = new FormData()
@@ -63,9 +86,9 @@ export default function AddAds({
         formData.append("status", "false")
 
 
-        if (imageFile) {
-            formData.append("image", imageFile)
-        }
+
+        if (imageFile) formData.append("image", imageFile);
+        if (!imageFile && imagePreview === null) formData.append("remove_image", "true");
 
         mutation.mutate(formData, {
             onSuccess: (res) => {
@@ -75,24 +98,16 @@ export default function AddAds({
         })
 
     }
-    useEffect(() => {
-        if (!adsData) return
-        reset({
-            name: adsData?.name || "",
-            placement: adsData?.placement || "",
-            target_url: adsData?.target_url || "",
-            start_date: adsData?.start_date || "",
-            end_date: adsData?.end_date || "",
-            // image: undefined,
-            // status: adsData?.status ? "true" : "false",
 
-        })
 
-        setImagePreview(adsData?.image || null);
+    const handleRemoveImage = () => {
         setImageFile(null);
+        setImagePreview(null);
+        setValue("image", null as unknown as FileList);
+    };
 
+    const isSubmitting = mutation.isPending;
 
-    }, [adsData, reset])
     return (
         <form onSubmit={handleSubmit(onSubmiting)}>
             <div className="grid gap-4 py-4">
@@ -146,31 +161,40 @@ export default function AddAds({
                         id="imageUpload"
                         type="file"
                         accept="image/*"
+                        required={!imagePreview}
                         {...register("image", {
                             onChange: (e) => {
                                 const file = e.target.files?.[0];
                                 if (!file) return;
                                 if (file?.size > 1 * 1024 * 1024) {
                                     toast.error("File size must be less than 1MB");
+                                    setValue("image", null as unknown as FileList);
+                                    setImageFile(null);
+                                    setImagePreview(null);
                                     return;
                                 }
                                 if (!file.type.startsWith("image/")) {
                                     toast.error("File must be an image");
+                                    setImageFile(null);
+                                    setImagePreview(null);
                                     e.target.value = "";
                                     return;
                                 }
-                                setImagePreview(URL.createObjectURL(file));
                                 setImageFile(file); // <-- harus ditambahkan
+                                setImagePreview(URL.createObjectURL(file));
                             }
                         })}
                     />
                     <div className="mt-2">
                         {imagePreview && (
-                            <img
-                                src={imagePreview}
-                                alt="Preview"
-                                style={{ maxWidth: 240, maxHeight: 120, borderRadius: 8 }}
-                            />
+                            <div className="relative border rounded-lg overflow-hidden">
+                                <img src={imagePreview} alt="Preview" style={{ maxWidth: 240, maxHeight: 120, borderRadius: 8 }} />
+                                <div className="absolute top-2 right-2 flex gap-2">
+                                    <Button type="button" size="icon" variant="destructive" onClick={handleRemoveImage} className="h-8 w-8">
+                                        <X className="w-4 h-4" />
+                                    </Button>
+                                </div>
+                            </div>
                         )}
                     </div>
 
@@ -226,8 +250,8 @@ export default function AddAds({
                 >
                     Cancel
                 </Button>
-                <Button type="submit">
-                    Create Ad
+                <Button disabled={isSubmitting} type="submit">
+                    {isSubmitting ? (<><Spinner data-icon="inline-start" /> Loading..</>) : editingAd ? "Update Ads" : "Create Ads"}
                 </Button>
             </DialogFooter>
         </form>

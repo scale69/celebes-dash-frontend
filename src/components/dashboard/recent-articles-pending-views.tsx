@@ -34,8 +34,8 @@ export default function RecentArticlesPendingViews() {
   if (isError) return <SkeletonArticles />;
 
   return (
-    <div className="grid lg:grid-cols-2 gap-6">
-      <Card>
+    <div className="lg:grid grid-cols-2 flex flex-col lg:flex-row gap-6">
+      <Card >
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-lg">Recent Articles</CardTitle>

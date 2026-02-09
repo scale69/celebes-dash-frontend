@@ -1,3 +1,4 @@
+import AuthProvider from "@/utils/providers/AuthProvider";
 import "../globals.css";
 
 import AdminPanelLayout from "@/components/admin-panel/adimin-panel-layout";
@@ -7,5 +8,12 @@ export default function DasboradLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <AdminPanelLayout>{children}</AdminPanelLayout>;
+  return (
+
+    <AdminPanelLayout>
+      <AuthProvider>
+        {children}
+      </AuthProvider>
+    </AdminPanelLayout>
+  )
 }

@@ -15,6 +15,7 @@ import {
   TooltipContent,
   TooltipProvider,
 } from "@/components/ui/tooltip";
+import { useAuthStore } from "@/lib/authStore";
 
 interface MenuProps {
   isOpen: boolean | undefined;
@@ -27,8 +28,12 @@ export function Menu({ isOpen }: MenuProps) {
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL
 
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     window.location.href = `${backendUrl}auth/logout/`;
+    // await api.post("/api/logout/")
+
+    useAuthStore.getState().clearAuth()
+    // window.location.href = "/login"
   };
 
   return (

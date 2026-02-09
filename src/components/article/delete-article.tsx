@@ -7,31 +7,31 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { deleteAds } from "@/lib/axios/actions/ads/delete"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Dispatch, SetStateAction } from "react"
 import { toast } from "sonner"
 import { Spinner } from "../ui/spinner"
+import { deleteBySlugAction } from "@/lib/axios/actions/articles"
 
 
-export default function DeleteAds({ adsId, setShowDeleteDialog }: { adsId: string, setShowDeleteDialog: Dispatch<SetStateAction<boolean>> }) {
+export default function DeleteArticle({ slug, setShowDeleteDialog }: { slug: string, setShowDeleteDialog: Dispatch<SetStateAction<boolean>> }) {
 
 
     const queryClient = useQueryClient()
 
     const mutation = useMutation({
-        mutationFn: (id: string) => {
-            return deleteAds(id);
+        mutationFn: (slug: string) => {
+            return deleteBySlugAction(slug);
         },
     })
 
-    const handleDeleteTag = (id: string) => {
-        mutation.mutate(id,
+    const handleDeleteArticle = (slug: string) => {
+        mutation.mutate(slug,
             {
                 onSuccess: () => {
-                    queryClient.invalidateQueries({ queryKey: ["ads"] });
+                    queryClient.invalidateQueries({ queryKey: ["articles"] });
                     setShowDeleteDialog(false)
-                    toast.success("Ad deleted successfully!");
+                    toast.success("Article deleted successfully!");
                 },
             }
         );
@@ -42,19 +42,19 @@ export default function DeleteAds({ adsId, setShowDeleteDialog }: { adsId: strin
     return (
         <AlertDialogContent>
             <AlertDialogHeader>
-                <AlertDialogTitle>Delete Tag</AlertDialogTitle>
+                <AlertDialogTitle>Delete Article</AlertDialogTitle>
                 <AlertDialogDescription>
-                    Are you sure you want to delete this tag? This action cannot be undone.
+                    Are you sure you want to delete this article? This action cannot be undone.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction
-                    onClick={() => handleDeleteTag(adsId)}
+                    onClick={() => handleDeleteArticle(slug)}
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     disabled={isSubmitting}
                 >
-                    {isSubmitting ? (<><Spinner data-icon="inline-start" /> Loading..</>) : "Delete Ads"}
+                    {isSubmitting ? (<><Spinner data-icon="inline-start" /> Loading..</>) : "Delete Article"}
                 </AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>

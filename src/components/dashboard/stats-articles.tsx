@@ -1,16 +1,13 @@
-// "use client";
 
 import {
-  ArrowUpRight,
   Bookmark,
-  FileText,
   Send,
   SquarePen,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { SkeletonSats } from "@/components/skeleton/article-skeleton";
-import { fetchArticleStats } from "@/lib/axios/actions/articles";
+import { fetchArticleStats } from "@/lib/axios/actions/taxonomy/get";
 
 export default function StatsArticles() {
   const { data, isLoading, isError } = useQuery({
@@ -20,6 +17,7 @@ export default function StatsArticles() {
 
   if (isLoading) return <SkeletonSats />;
   if (isError) return <SkeletonSats />;
+
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 ">
@@ -63,7 +61,6 @@ export default function StatsArticles() {
           </div>
         </CardContent>
       </Card>
-      {/* totol Total views */}
     </div>
   );
 }

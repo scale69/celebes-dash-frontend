@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { CategoryFormData } from "@/types/form-types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateCatogory } from "@/lib/axios/actions/category/patch";
+import { Spinner } from "@/components/ui/spinner";
 
 
 // Define MergedCategory type locally since it is not imported from any module
@@ -64,6 +65,8 @@ export default function EditCategory({ category, setCategoryDialog }: AddOrEditC
         })
 
     }, [category, reset])
+    const isSubmitting = mutation.isPending;
+
     return (
         <div className=''>
             <form onSubmit={handleSubmit(onSubmit)}>
@@ -111,7 +114,7 @@ export default function EditCategory({ category, setCategoryDialog }: AddOrEditC
                         Cancel
                     </Button>
                     <Button type="submit">
-                        Update Category
+                        {isSubmitting ? (<><Spinner data-icon="inline-start" /> Loading..</>) : "Update Category"}
                     </Button>
                 </DialogFooter>
             </form>

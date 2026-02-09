@@ -35,15 +35,15 @@ function SignContent() {
 
     // Menangkap pesan error dari URL (misal: redirect dari backend)
     useEffect(() => {
-        // untuk debug localhost
         // const fetchAccessToken = async () => {
         //     try {
-        //         const res = await fetch(`${signInUrl}/auth/token/`, {
+        //         const res = await fetch(`${signInUrl}token/refresh/`, {
+        //             method: "POST",
         //             credentials: "include", // untuk kirim cookie
         //         });
         //         if (res.ok) {
         //             const data = await res.json();
-        //             setAccessToken(data.access_token); // simpan di memory/state
+        //             setAccessToken(data.access); // simpan di memory/state
         //         } else {
         //             router.push("/sign-in");
         //         }

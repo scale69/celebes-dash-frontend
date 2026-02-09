@@ -113,17 +113,6 @@ export default function AdsManagementContent({ adType = "header" }) {
     };
 
 
-
-
-
-
-
-    const handleDelete = (id: any) => {
-        setAdsId(id)
-        setShowDeleteDialog(true)
-
-    };
-
     const handleEdit = (ad: any) => {
         setEditingAd(ad);
         setAdDialog(true);
@@ -155,11 +144,6 @@ export default function AdsManagementContent({ adType = "header" }) {
 
     if (isLoading) return <SkeletonTable />
     if (!data) return <p>data kosong</p>
-
-
-    console.log(adType);
-    console.log(data);
-
 
 
 
@@ -319,92 +303,6 @@ export default function AdsManagementContent({ adType = "header" }) {
                             adType={adType}
                         />
                     )}
-                    {/* <form >
-                        <div className="grid gap-4 py-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="name">
-                                    Ad Name <span className="text-destructive">*</span>
-                                </Label>
-                                <Input
-                                    id="name"
-                                    name="name"
-                                    placeholder="Enter ad name"
-                                    // defaultValue={editingAd?.name}
-                                    required
-                                />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="imageUrl">
-                                    Image URL <span className="text-destructive">*</span>
-                                </Label>
-                                <Input
-                                    id="imageUrl"
-                                    name="imageUrl"
-                                    placeholder="https://example.com/image.jpg"
-                                    // defaultValue={editingAd?.imageUrl}
-                                    required
-                                />
-                                <p className="text-xs text-muted-foreground">
-                                    Recommended size: {adType}px
-                                </p>
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="targetUrl">
-                                    Target URL <span className="text-destructive">*</span>
-                                </Label>
-                                <Input
-                                    id="targetUrl"
-                                    name="targetUrl"
-                                    placeholder="https://example.com"
-                                    // defaultValue={editingAd?.targetUrl}
-                                    required
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="grid gap-2">
-                                    <Label htmlFor="startDate">
-                                        Start Date <span className="text-destructive">*</span>
-                                    </Label>
-                                    <Input
-                                        id="startDate"
-                                        name="startDate"
-                                        type="date"
-                                        // defaultValue={editingAd?.startDate}
-                                        required
-                                    />
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="endDate">
-                                        End Date <span className="text-destructive">*</span>
-                                    </Label>
-                                    <Input
-                                        id="endDate"
-                                        name="endDate"
-                                        type="date"
-                                        // defaultValue={editingAd?.endDate}
-                                        required
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                        <DialogFooter>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => {
-                                    setAdDialog(false);
-                                }}
-                            >
-                                Cancel
-                            </Button>
-                            <Button type="submit">
-                                {editingAd ? "Update Ad" : "Create Ad"}
-                            </Button>
-                        </DialogFooter>
-                    </form> */}
                 </DialogContent>
             </Dialog>
 

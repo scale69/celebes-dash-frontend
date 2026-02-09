@@ -57,7 +57,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { SkeletonArticles } from "../skeleton/article-skeleton";
 import { ArticlesResponse, Category, ResultArtilce, Tag } from "@/types/data";
 import { SkeletonTable } from "../skeleton/table-skeleton";
@@ -71,22 +71,25 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import PaginationComponent from "../layout/pagination";
+import DeleteArticle from "./delete-article";
 export default function ArticleContent() {
   const [showPreview, setShowPreview] = useState(false);
   const [filteredArticles, setFilteredArticles] = useState<String>("");
+  const [slug, setSlug] = useState("");
+  const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>();
+
   const queryClient = useQueryClient();
-  const router = useRouter()
-  const searchParams = useSearchParams()
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const page = useMemo(() => {
-    const pg = Number(searchParams.get("page"))
-    return isNaN(pg) || pg < 1 ? 1 : pg
-  }, [searchParams])
+    const pg = Number(searchParams.get("page"));
+    return isNaN(pg) || pg < 1 ? 1 : pg;
+  }, [searchParams]);
 
   const { data, isLoading, isError } = useQuery<ArticlesResponse>({
     queryKey: ["articles", page],
     queryFn: () => fetchArticles(page),
-
   });
 
   if (filteredArticles === "all") {
@@ -95,8 +98,6 @@ export default function ArticleContent() {
 
   if (isLoading) return <SkeletonTable />;
   if (isError) return <SkeletonTable />;
-
-
 
   const handleDleteByID = async (slug: string) => {
     try {
@@ -114,11 +115,7 @@ export default function ArticleContent() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => router.back()}
-        >
+        <Button variant="ghost" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>
@@ -145,8 +142,13 @@ export default function ArticleContent() {
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">
-                {data?.results.length} articles
+                {data?.results.length} articles / page
               </span>
+              <Button variant="outline" asChild>
+                <Link href={"/articles/add"}>
+                  <Plus className="w-4 h-4 mr-2" /> Add Article
+                </Link>
+              </Button>
             </div>
           </div>
         </CardHeader>
@@ -169,29 +171,33 @@ export default function ArticleContent() {
               {data?.results
                 .filter(
                   (article: ResultArtilce) =>
-                    article.status === filteredArticles || filteredArticles === ""
-                ).sort((a: ResultArtilce, b: ResultArtilce) =>
-                  new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+                    article.status === filteredArticles ||
+                    filteredArticles === "",
+                )
+                .sort(
+                  (a: ResultArtilce, b: ResultArtilce) =>
+                    new Date(b.updated_at).getTime() -
+                    new Date(a.updated_at).getTime(),
                 )
                 .map((article: ResultArtilce) => (
                   <TableRow key={article.id}>
                     <TableCell>
                       <span className="text-sm ">
-
-                        {
-                          data.results
-                            .filter(
-                              (a: ResultArtilce) =>
-                                a.status === filteredArticles || filteredArticles === ""
-                            )
-                            .sort(
-                              (a: ResultArtilce, b: ResultArtilce) =>
-                                new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
-                            )
-                            .findIndex((item: ResultArtilce) => item.id === article.id) + 1
-                        }
+                        {data.results
+                          .filter(
+                            (a: ResultArtilce) =>
+                              a.status === filteredArticles ||
+                              filteredArticles === "",
+                          )
+                          .sort(
+                            (a: ResultArtilce, b: ResultArtilce) =>
+                              new Date(b.updated_at).getTime() -
+                              new Date(a.updated_at).getTime(),
+                          )
+                          .findIndex(
+                            (item: ResultArtilce) => item.id === article.id,
+                          ) + 1}
                       </span>
-
                     </TableCell>
                     <TableCell className="font-medium  max-w-[200px] truncate">
                       {article.title}
@@ -208,8 +214,10 @@ export default function ArticleContent() {
                         {article.category?.name || "No Category"}
                       </Badge>
                     </TableCell>
-                    <TableCell>{article?.pewarta}</TableCell>
-                    <TableCell>{article?.editor}</TableCell>
+                    <TableCell className="max-w-[200px]  truncate">{article?.pewarta}</TableCell>
+                    <TableCell>
+                      {article?.editor}
+                    </TableCell>
                     <TableCell>
                       <Badge
                         variant={
@@ -227,7 +235,10 @@ export default function ArticleContent() {
                       {new Date(article.updated_at).toLocaleDateString()}
                     </TableCell>
                     <TableCell className="text-xs">
-                      {new Date(article.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(article.updated_at).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
@@ -238,38 +249,19 @@ export default function ArticleContent() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem asChild>
-                            <Link href={`articles/edit/${article.slug}`} >
+                            <Link href={`articles/edit/${article.slug}`}>
                               <Edit className="w-4 h-4 mr-2" /> Edit
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="text-destructive"
-                            asChild
+                            onClick={() => {
+                              setSlug(article.slug);
+                              setShowDeleteDialog(true);
+                            }}
                           >
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button variant="ghost">
-                                  <Trash2 className="w-4 h-4 mr-2" /> Delete
-
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Delete Article?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    This action cannot be undone. This will permanently delete your article
-                                    from our servers.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => handleDleteByID(article.slug)}
-                                  >Continue</AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
+                            <Trash2 className="w-4 h-4 mr-2" /> Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -279,11 +271,7 @@ export default function ArticleContent() {
             </TableBody>
           </Table>
           {data?.results.length === 0 && <NoData />}
-          {data && (
-            <PaginationComponent
-              data={data}
-            />
-          )}
+          {data && <PaginationComponent data={data} />}
         </CardContent>
 
         {/* Preview Dialog */}
@@ -305,24 +293,33 @@ export default function ArticleContent() {
                   {/* Metadata */}
                   <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium">
-                        By {article.pewarta}
-                      </span>
+                      <span className="font-medium">By {article.pewarta}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                    </div>
-                    <div>
-                    </div>
-
+                    <div className="flex items-center gap-2"></div>
                   </div>
                 </div>
               </div>
             ))}
           </DialogContent>
         </Dialog>
-
       </Card>
-    </div>
 
+      {/* delete Article */}
+      <AlertDialog
+        open={!!showDeleteDialog}
+        onOpenChange={(open) => setShowDeleteDialog(open)}
+      >
+        {slug && (
+          <DeleteArticle
+            slug={slug}
+            setShowDeleteDialog={
+              setShowDeleteDialog as React.Dispatch<
+                React.SetStateAction<boolean>
+              >
+            }
+          />
+        )}
+      </AlertDialog>
+    </div>
   );
 }

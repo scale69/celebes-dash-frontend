@@ -29,20 +29,6 @@ export async function getArticleBySlug(slug?: string) {
   }
 }
 
-export async function fetchArticleStats() {
-  const instance = await axiosInstance();
-  try {
-    const res = await instance.get(`articles/stats/`);
-    return res.data;
-  } catch (error) {
-    if (error instanceof Error) {
-      console.log(error.message); // Memperbaiki akses pesan kesalahan
-    } else {
-      console.log("An unknown error occurred"); // Menangani kesalahan yang tidak terduga
-    }
-  }
-}
-
 export async function bulkDeleteArticle(ids: String[]) {
   const instance = await axiosInstance();
 

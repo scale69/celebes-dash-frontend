@@ -1,10 +1,10 @@
 "use server";
 import axiosInstance from "../../instance";
 
-export async function fetchAds() {
+export async function fetchArticleStats() {
   const instance = await axiosInstance();
   try {
-    const res = await instance.get(`ads/`);
+    const res = await instance.get(`articles/stats/`);
     return res.data;
   } catch (error) {
     if (error instanceof Error) {
@@ -14,15 +14,3 @@ export async function fetchAds() {
     }
   }
 }
-
-// import api from "@/lib/axios/api";
-
-// export async function fetchAds() {
-//   try {
-//     const res = await api.get("ads/");
-//     return res.data;
-//   } catch (error) {
-//     console.error(error);
-//     throw error;
-//   }
-// }

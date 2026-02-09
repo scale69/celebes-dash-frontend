@@ -34,6 +34,8 @@ export interface ResultArtilce {
   status: string;
   image: null | string;
   image_description: string;
+  top_article: boolean;
+  popular_article: boolean;
 }
 
 export interface Author {

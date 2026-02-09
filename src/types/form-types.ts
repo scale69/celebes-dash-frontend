@@ -15,6 +15,18 @@ export interface AdsFormData {
   status: string;
 }
 
+export interface ArticleFormData {
+  title: string;
+  content: string;
+  category_slug: string;
+  image?: FileList;
+  status: string;
+  pewarta: string;
+  image_description: string;
+  top_article: boolean;
+  popular_article: boolean;
+}
+
 export interface AdsUpdateStatusFormData {
   name: string;
   placement: string;

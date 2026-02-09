@@ -17,18 +17,13 @@ import { SkeletonFormArticles } from "../skeleton/article-skeleton";
 import FormCategory from "./form/form-category";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { lazy } from "react";
+import { Spinner } from "../ui/spinner";
+import { Switch } from "../ui/switch";
+import { ArticleFormData } from "@/types/form-types";
 
 const RichTextEditor = lazy(() => import("../RichTextEditor")); // lazy load
 
-type ArticleForm = {
-    title: string;
-    content: string;
-    category_slug: string;
-    image?: FileList;
-    status: string;
-    pewarta: string;
-    image_description: string;
-};
+
 
 export default function AddArticleOrEditArticle({ slug, title }: { slug: string, title: string }) {
     const pathname = usePathname();
@@ -38,13 +33,15 @@ export default function AddArticleOrEditArticle({ slug, title }: { slug: string,
     const { user } = useUser();
 
     // Form
-    const { register, handleSubmit, control, setValue, reset } = useForm<ArticleForm>({
+    const { register, handleSubmit, control, setValue, reset } = useForm<ArticleFormData>({
         defaultValues: {
             title: "",
             content: "",
             status: "",
             category_slug: "",
             pewarta: "",
+            top_article: false,
+            popular_article: false,
             image_description: "",
             image: undefined,
         },
@@ -79,6 +76,8 @@ export default function AddArticleOrEditArticle({ slug, title }: { slug: string,
             content: data.content ?? "",
             status: data.status ?? "",
             pewarta: data.pewarta ?? "",
+            top_article: data.top_article ?? "",
+            popular_article: data.popular_article ?? "",
             image_description: data.image_description ?? "",
             category_slug: data.category?.slug ?? "",
         });
@@ -108,12 +107,14 @@ export default function AddArticleOrEditArticle({ slug, title }: { slug: string,
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["articles"] }),
     });
 
-    const onSubmit = (form: ArticleForm) => {
+    const onSubmit = (form: ArticleFormData) => {
         const formData = new FormData();
         formData.append("title", form.title);
         formData.append("content", form.content);
         formData.append("status", form.status);
         formData.append("pewarta", form.pewarta);
+        formData.append("top_article", String(form.top_article));
+        formData.append("popular_article", String(form.popular_article));
         formData.append("image_description", form.image_description);
         formData.append("category_slug", form.category_slug === "umum" ? "" : form.category_slug);
         tagData.forEach((tag) => formData.append("tag_names", tag));
@@ -294,6 +295,15 @@ export default function AddArticleOrEditArticle({ slug, title }: { slug: string,
                                             onChange: (e) => {
                                                 const file = e.target.files?.[0];
                                                 if (!file) return;
+                                                if (file?.size > 1 * 1024 * 1024) {
+                                                    toast.error("File size must be less than 1MB");
+                                                    return;
+                                                }
+                                                if (!file.type.startsWith("image/")) {
+                                                    toast.error("File must be an image");
+                                                    e.target.value = "";
+                                                    return;
+                                                }
                                                 setImageFile(file);
                                                 setImagePreview(URL.createObjectURL(file));
                                             },
@@ -318,10 +328,47 @@ export default function AddArticleOrEditArticle({ slug, title }: { slug: string,
                             <Input id="image_description" {...register("image_description")} required />
                         </div>
 
+                        {/* Top News and Popular News */}
+                        <div className="flex gap-10">
+                            <div className="flex items-center space-x-2">
+                                <Label htmlFor="top-news-switch">Top News</Label>
+
+                                <Controller
+                                    name="top_article"
+                                    control={control}
+                                    defaultValue={false}
+                                    render={({ field }) => (
+                                        <Switch
+                                            id="top-news-switch"
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
+                                        />
+                                    )}
+                                />
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <Label htmlFor="popular_article">Popular News</Label>
+
+                                <Controller
+                                    name="popular_article"
+                                    control={control}
+                                    defaultValue={false}
+                                    render={({ field }) => (
+                                        <Switch
+                                            id="popular_article"
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
+                                        />
+                                    )}
+                                />
+                            </div>
+
+                        </div>
+
                         {/* Submit */}
                         <div className=" w-full justify-end flex gap-3 pt-4">
                             <Button type="submit" disabled={isSubmitting}>
-                                {isSubmitting ? "Updating..." : isEdit ? "Update Article" : "Create Article"}
+                                {isSubmitting ? (<><Spinner data-icon="inline-start" /> Loading..</>) : isEdit ? "Update Article" : "Create Article"}
                             </Button>
                         </div>
                     </CardContent>
