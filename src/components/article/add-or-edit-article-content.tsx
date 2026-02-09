@@ -325,7 +325,7 @@ export default function AddArticleOrEditArticle({ slug, title }: { slug: string,
                         {/* Image Description */}
                         <div className="grid gap-2">
                             <Label htmlFor="image_description">Description Image <span className="text-destructive">*</span></Label>
-                            <Input id="image_description" {...register("image_description")} required />
+                            <Input id="image_description" {...register("image_description")} />
                         </div>
 
                         {/* Top News and Popular News */}
