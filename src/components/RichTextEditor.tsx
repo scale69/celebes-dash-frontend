@@ -8,7 +8,11 @@ import Link from "@tiptap/extension-link";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import Highlight from "@tiptap/extension-highlight";
+import { TextStyle } from "@tiptap/extension-text-style";
+import { Extension } from "@tiptap/core";
+import type { CommandProps } from "@tiptap/core";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import Image from "@tiptap/extension-image";
 import { toast } from "sonner";
 
@@ -42,6 +46,58 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
 
+// Custom FontSize Extension
+const FontSize = Extension.create({
+  name: "fontSize",
+
+  addOptions() {
+    return {
+      types: ["textStyle"],
+    };
+  },
+
+  addGlobalAttributes() {
+    return [
+      {
+        types: this.options.types,
+        attributes: {
+          fontSize: {
+            default: null,
+            parseHTML: (element) =>
+              element.style.fontSize?.replace(/['"]+/g, ""),
+            renderHTML: (attributes) => {
+              if (!attributes.fontSize) {
+                return {};
+              }
+              return {
+                style: `font-size: ${attributes.fontSize}`,
+              };
+            },
+          },
+        },
+      },
+    ];
+  },
+
+  addCommands() {
+    return {
+      setFontSize:
+        (fontSize: string) =>
+          ({ chain }: CommandProps) => {
+            return chain().setMark("textStyle", { fontSize }).run();
+          },
+      unsetFontSize:
+        () =>
+          ({ chain }: CommandProps) => {
+            return chain()
+              .setMark("textStyle", { fontSize: null })
+              .removeEmptyTextStyle()
+              .run();
+          },
+    };
+  },
+});
+
 const ResizableImage = ({ node, updateAttributes, selected }: any) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -49,7 +105,6 @@ const ResizableImage = ({ node, updateAttributes, selected }: any) => {
     typeof node?.attrs?.width === "number" ? node.attrs.width : null
   );
 
-  // 🔑 REF untuk nilai live (anti stale)
   const widthRef = useRef<number | null>(width);
 
   useEffect(() => {
@@ -70,7 +125,6 @@ const ResizableImage = ({ node, updateAttributes, selected }: any) => {
       containerRef.current?.getBoundingClientRect().width ??
       300;
 
-    // ✅ ambil width dari editor (lebih stabil)
     const editorEl = containerRef.current?.closest(".ProseMirror");
     const parentWidth =
       editorEl?.getBoundingClientRect().width ?? window.innerWidth;
@@ -114,9 +168,7 @@ const ResizableImage = ({ node, updateAttributes, selected }: any) => {
 
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL;
   const imageUrl =
-    src?.startsWith("https") || src?.startsWith("data:")
-      ? src
-      : `${backendUrl}${src}`;
+    src?.startsWith("data:") ? src : `${backendUrl}${src}`;
 
   return (
     <NodeViewWrapper
@@ -151,95 +203,6 @@ const ResizableImage = ({ node, updateAttributes, selected }: any) => {
   );
 };
 
-// const ResizableImage = ({ node, updateAttributes, selected }: any) => {
-//   const containerRef = useRef<HTMLDivElement | null>(null);
-//   const [width, setWidth] = useState<number | null>(
-//     typeof node?.attrs?.width === "number" ? node.attrs.width : null,
-//   );
-
-//   useEffect(() => {
-//     setWidth(typeof node?.attrs?.width === "number" ? node.attrs.width : null);
-//   }, [node?.attrs?.width]);
-
-//   const startResize = (e: any) => {
-//     e.preventDefault();
-//     e.stopPropagation();
-
-//     const startX = e.clientX;
-//     const startWidth =
-//       typeof width === "number"
-//         ? width
-//         : containerRef.current?.getBoundingClientRect().width ?? 300;
-
-//     const parentWidth =
-//       containerRef.current?.parentElement?.getBoundingClientRect().width ?? 1200;
-
-//     const onMove = (ev: any) => {
-//       const next = clamp(startWidth + (ev.clientX - startX), 80, parentWidth);
-//       setWidth(next);
-//     };
-
-//     const onUp = () => {
-//       const finalWidth =
-//         typeof width === "number"
-//           ? Math.round(width)
-//           : Math.round(
-//             containerRef.current?.getBoundingClientRect().width ?? startWidth,
-//           );
-//       updateAttributes({ width: finalWidth });
-//       window.removeEventListener("mousemove", onMove);
-//       window.removeEventListener("mouseup", onUp);
-//     };
-
-//     window.addEventListener("mousemove", onMove);
-//     window.addEventListener("mouseup", onUp);
-//   };
-
-//   const { textAlign, src } = node.attrs;
-
-//   const alignClass = {
-//     left: "mr-auto",
-//     right: "ml-auto",
-//     center: "mx-auto",
-//     justify: "mx-auto",
-//   }[textAlign as string] || "";
-
-//   const backendUrl = process.env.NEXT_PUBLIC_BASE_BACKEND_API_URL
-//   const imageUrl =
-//     src?.startsWith("http") || src?.startsWith("data:")
-//       ? src
-//       : `${backendUrl}${src}`;
-
-//   return (
-//     <NodeViewWrapper
-//       ref={containerRef}
-//       className={`relative my-4 max-w-full ${textAlign ? "block" : "inline-block"} ${alignClass}`}
-//       contentEditable={false}
-//       data-selected={selected ? "true" : "false"}
-//       style={{ width: typeof width === "number" ? `${width}px` : undefined }}
-//     >
-//       <img
-//         src={imageUrl}
-//         alt={node.attrs.alt || ""}
-//         title={node.attrs.title || ""}
-//         className="max-w-full h-auto rounded-lg block"
-//         draggable={false}
-//       />
-//       <Scaling
-//         role="button"
-//         tabIndex={-1}
-//         aria-label="Resize image"
-//         onMouseDown={startResize}
-//         className={[
-//           "absolute right-1 bottom-1 rotate-90 h-5 w-5 cursor-se-resize rounded-sm",
-//           "bg-white border border-background shadow",
-//           selected ? "opacity-100" : "opacity-70 hover:opacity-100",
-//         ].join(" ")}
-//       />
-//     </NodeViewWrapper>
-//   );
-// };
-
 const CustomImage = Image.extend({
   addAttributes() {
     return {
@@ -247,14 +210,31 @@ const CustomImage = Image.extend({
       width: {
         default: null,
         parseHTML: (element) => {
-          const raw = element.getAttribute("width");
-          if (!raw) return null;
-          const parsed = Number(raw);
-          return Number.isFinite(parsed) ? parsed : null;
+          // Parse dari attribute width ATAU dari inline style
+          const widthAttr = element.getAttribute("width");
+          if (widthAttr) {
+            const parsed = Number(widthAttr);
+            return Number.isFinite(parsed) ? parsed : null;
+          }
+
+          // Coba parse dari style="width: 300px"
+          const styleWidth = element.style.width;
+          if (styleWidth) {
+            const parsed = parseInt(styleWidth);
+            return Number.isFinite(parsed) ? parsed : null;
+          }
+
+          return null;
         },
         renderHTML: (attributes) => {
           if (!attributes.width) return {};
-          return { width: attributes.width };
+
+          // ✅ PENTING: Render sebagai inline style DAN attribute
+          // Inline style memastikan width bekerja di frontend
+          return {
+            width: attributes.width,
+            style: `width: ${attributes.width}px; height: auto;`
+          };
         },
       },
     };
@@ -271,6 +251,7 @@ const MenuBar = ({ editor }: any) => {
   if (!editor) return null;
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [fontSize, setFontSize] = useState<string>("16");
 
   const addLink = () => {
     const url = window.prompt("Enter URL:");
@@ -306,6 +287,14 @@ const MenuBar = ({ editor }: any) => {
     event.target.value = "";
   };
 
+  const handleFontSizeChange = (value: string) => {
+    setFontSize(value);
+    const size = parseInt(value);
+    if (size && size >= 8 && size <= 72) {
+      editor.chain().focus().setFontSize(`${size}px`).run();
+    }
+  };
+
   return (
     <div className="border-b border-border p-2 flex flex-wrap gap-1 bg-muted/30">
       {/* Undo/Redo */}
@@ -329,6 +318,22 @@ const MenuBar = ({ editor }: any) => {
       >
         <Redo className="w-4 h-4" />
       </Button>
+
+      <div className="w-px h-8 bg-border mx-1" />
+
+      {/* Font Size Input */}
+      <div className="flex items-center gap-1">
+        <Input
+          type="number"
+          min="8"
+          max="72"
+          value={fontSize}
+          onChange={(e) => handleFontSizeChange(e.target.value)}
+          className="h-8 w-16 text-sm"
+          placeholder="16"
+        />
+        <span className="text-xs text-muted-foreground">px</span>
+      </div>
 
       <div className="w-px h-8 bg-border mx-1" />
 
@@ -583,6 +588,8 @@ export default function RichTextEditor({
       Highlight.configure({
         multicolor: false,
       }),
+      TextStyle,
+      FontSize,
     ],
     content: content || "",
     onUpdate: ({ editor }) => {
@@ -595,6 +602,7 @@ export default function RichTextEditor({
       },
     },
   });
+
   useEffect(() => {
     if (!editor) return;
     if (editor.isFocused) return;
@@ -605,6 +613,7 @@ export default function RichTextEditor({
       });
     }
   }, [content, editor]);
+
   return (
     <div className="border border-input rounded-lg overflow-hidden bg-background">
       <MenuBar editor={editor} />
