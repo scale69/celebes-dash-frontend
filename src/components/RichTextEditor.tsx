@@ -167,8 +167,8 @@ const ResizableImage = ({ node, updateAttributes, selected }: any) => {
   }[textAlign as string] || "";
 
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL;
-  const imageUrl =
-    src?.startsWith("data:") ? src : `${backendUrl}${src}`;
+  const imageUrl = src
+  // src?.startsWith("data:") ? src : `${backendUrl}${src}`;
 
   return (
     <NodeViewWrapper
