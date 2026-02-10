@@ -114,7 +114,7 @@ const ResizableImage = ({ node, updateAttributes, selected }: any) => {
 
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL;
   const imageUrl =
-    src?.startsWith("http") || src?.startsWith("data:")
+    src?.startsWith("https") || src?.startsWith("data:")
       ? src
       : `${backendUrl}${src}`;
 
