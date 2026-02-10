@@ -16,6 +16,7 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 import { useAuthStore } from "@/lib/authStore";
+import { handleLogout } from "@/lib/axios/actions/logout";
 
 interface MenuProps {
   isOpen: boolean | undefined;
@@ -25,16 +26,7 @@ export function Menu({ isOpen }: MenuProps) {
   const pathname = usePathname();
   const menuList = getMenuList(pathname);
 
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL
 
-
-  const handleLogout = async () => {
-    window.location.href = `${backendUrl}auth/logout/`;
-    // await api.post("/api/logout/")
-
-    useAuthStore.getState().clearAuth()
-    // window.location.href = "/login"
-  };
 
   return (
     <ScrollArea className="[&>div>div[style]]:!block relative overflow-y-scroll h-full  ">

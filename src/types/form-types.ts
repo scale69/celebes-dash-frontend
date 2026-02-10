@@ -12,7 +12,7 @@ export interface AdsFormData {
   start_date: string;
   end_date: string;
   image: FileList;
-  status: string;
+  status: boolean;
 }
 
 export interface ArticleFormData {

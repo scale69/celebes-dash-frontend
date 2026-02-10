@@ -4,7 +4,7 @@ import axiosInstance from "../../instance";
 export async function fetchMe() {
   const instance = await axiosInstance();
   try {
-    const res = await instance.get(`users/me/`);
+    const res = await instance.get(`/api/users/me/`);
     return res.data;
   } catch (error) {
     if (error instanceof Error) {
@@ -18,7 +18,7 @@ export async function fetchMe() {
 export async function fetchUser() {
   const instance = await axiosInstance();
   try {
-    const res = await instance.get(`users/`);
+    const res = await instance.get(`/api/users/`);
     return res.data;
   } catch (error) {
     if (error instanceof Error) {

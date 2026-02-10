@@ -4,7 +4,7 @@ import axiosInstance from "../../instance";
 export async function fetchAds() {
   const instance = await axiosInstance();
   try {
-    const res = await instance.get(`ads/`);
+    const res = await instance.get(`/api/ads/`);
     return res.data;
   } catch (error) {
     if (error instanceof Error) {

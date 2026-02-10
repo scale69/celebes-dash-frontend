@@ -1,6 +1,7 @@
 "use client";
 
-import { useEditor, EditorContent } from "@tiptap/react";
+import { useEditor, EditorContent, NodeViewWrapper, ReactNodeViewRenderer } from "@tiptap/react";
+import { mergeAttributes } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import Link from "@tiptap/extension-link";
@@ -8,6 +9,9 @@ import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import Highlight from "@tiptap/extension-highlight";
 import { Button } from "@/components/ui/button";
+import Image from "@tiptap/extension-image";
+import { toast } from "sonner";
+
 import {
   Bold,
   Italic,
@@ -30,11 +34,243 @@ import {
   Undo,
   Redo,
   Minus,
+  Scaling,
 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
+}
+
+const ResizableImage = ({ node, updateAttributes, selected }: any) => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  const [width, setWidth] = useState<number | null>(
+    typeof node?.attrs?.width === "number" ? node.attrs.width : null
+  );
+
+  // 🔑 REF untuk nilai live (anti stale)
+  const widthRef = useRef<number | null>(width);
+
+  useEffect(() => {
+    const w =
+      typeof node?.attrs?.width === "number" ? node.attrs.width : null;
+    setWidth(w);
+    widthRef.current = w;
+  }, [node?.attrs?.width]);
+
+  const startResize = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const startX = e.clientX;
+
+    const startWidth =
+      widthRef.current ??
+      containerRef.current?.getBoundingClientRect().width ??
+      300;
+
+    // ✅ ambil width dari editor (lebih stabil)
+    const editorEl = containerRef.current?.closest(".ProseMirror");
+    const parentWidth =
+      editorEl?.getBoundingClientRect().width ?? window.innerWidth;
+
+    const onMove = (ev: MouseEvent) => {
+      const next = clamp(
+        startWidth + (ev.clientX - startX),
+        80,
+        parentWidth
+      );
+
+      widthRef.current = next;
+      setWidth(next);
+    };
+
+    const onUp = () => {
+      const finalWidth = Math.round(
+        widthRef.current ??
+        containerRef.current?.getBoundingClientRect().width ??
+        startWidth
+      );
+
+      updateAttributes({ width: finalWidth });
+
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  };
+
+  const { textAlign, src } = node.attrs;
+
+  const alignClass = {
+    left: "mr-auto",
+    right: "ml-auto",
+    center: "mx-auto",
+    justify: "mx-auto",
+  }[textAlign as string] || "";
+
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL;
+  const imageUrl =
+    src?.startsWith("http") || src?.startsWith("data:")
+      ? src
+      : `${backendUrl}${src}`;
+
+  return (
+    <NodeViewWrapper
+      ref={containerRef}
+      contentEditable={false}
+      className={`relative my-4 max-w-full block ${alignClass}`}
+      data-selected={selected ? "true" : "false"}
+      style={{
+        width: typeof width === "number" ? `${width}px` : undefined,
+      }}
+    >
+      <img
+        src={imageUrl}
+        alt={node.attrs.alt || ""}
+        title={node.attrs.title || ""}
+        className="max-w-full h-auto rounded-lg block"
+        draggable={false}
+      />
+
+      {selected && (
+        <Scaling
+          size={25}
+          role="button"
+          aria-label="Resize image"
+          tabIndex={-1}
+          onMouseDown={startResize}
+          className="absolute right-1 bottom-1 rotate-90 text-sky-500  cursor-se-resize
+                     rounded-sm bg-white m-2 border shadow opacity-90 hover:opacity-100"
+        />
+      )}
+    </NodeViewWrapper>
+  );
+};
+
+// const ResizableImage = ({ node, updateAttributes, selected }: any) => {
+//   const containerRef = useRef<HTMLDivElement | null>(null);
+//   const [width, setWidth] = useState<number | null>(
+//     typeof node?.attrs?.width === "number" ? node.attrs.width : null,
+//   );
+
+//   useEffect(() => {
+//     setWidth(typeof node?.attrs?.width === "number" ? node.attrs.width : null);
+//   }, [node?.attrs?.width]);
+
+//   const startResize = (e: any) => {
+//     e.preventDefault();
+//     e.stopPropagation();
+
+//     const startX = e.clientX;
+//     const startWidth =
+//       typeof width === "number"
+//         ? width
+//         : containerRef.current?.getBoundingClientRect().width ?? 300;
+
+//     const parentWidth =
+//       containerRef.current?.parentElement?.getBoundingClientRect().width ?? 1200;
+
+//     const onMove = (ev: any) => {
+//       const next = clamp(startWidth + (ev.clientX - startX), 80, parentWidth);
+//       setWidth(next);
+//     };
+
+//     const onUp = () => {
+//       const finalWidth =
+//         typeof width === "number"
+//           ? Math.round(width)
+//           : Math.round(
+//             containerRef.current?.getBoundingClientRect().width ?? startWidth,
+//           );
+//       updateAttributes({ width: finalWidth });
+//       window.removeEventListener("mousemove", onMove);
+//       window.removeEventListener("mouseup", onUp);
+//     };
+
+//     window.addEventListener("mousemove", onMove);
+//     window.addEventListener("mouseup", onUp);
+//   };
+
+//   const { textAlign, src } = node.attrs;
+
+//   const alignClass = {
+//     left: "mr-auto",
+//     right: "ml-auto",
+//     center: "mx-auto",
+//     justify: "mx-auto",
+//   }[textAlign as string] || "";
+
+//   const backendUrl = process.env.NEXT_PUBLIC_BASE_BACKEND_API_URL
+//   const imageUrl =
+//     src?.startsWith("http") || src?.startsWith("data:")
+//       ? src
+//       : `${backendUrl}${src}`;
+
+//   return (
+//     <NodeViewWrapper
+//       ref={containerRef}
+//       className={`relative my-4 max-w-full ${textAlign ? "block" : "inline-block"} ${alignClass}`}
+//       contentEditable={false}
+//       data-selected={selected ? "true" : "false"}
+//       style={{ width: typeof width === "number" ? `${width}px` : undefined }}
+//     >
+//       <img
+//         src={imageUrl}
+//         alt={node.attrs.alt || ""}
+//         title={node.attrs.title || ""}
+//         className="max-w-full h-auto rounded-lg block"
+//         draggable={false}
+//       />
+//       <Scaling
+//         role="button"
+//         tabIndex={-1}
+//         aria-label="Resize image"
+//         onMouseDown={startResize}
+//         className={[
+//           "absolute right-1 bottom-1 rotate-90 h-5 w-5 cursor-se-resize rounded-sm",
+//           "bg-white border border-background shadow",
+//           selected ? "opacity-100" : "opacity-70 hover:opacity-100",
+//         ].join(" ")}
+//       />
+//     </NodeViewWrapper>
+//   );
+// };
+
+const CustomImage = Image.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      width: {
+        default: null,
+        parseHTML: (element) => {
+          const raw = element.getAttribute("width");
+          if (!raw) return null;
+          const parsed = Number(raw);
+          return Number.isFinite(parsed) ? parsed : null;
+        },
+        renderHTML: (attributes) => {
+          if (!attributes.width) return {};
+          return { width: attributes.width };
+        },
+      },
+    };
+  },
+  renderHTML({ HTMLAttributes }) {
+    return ["img", mergeAttributes(this.options.HTMLAttributes, HTMLAttributes)];
+  },
+  addNodeView() {
+    return ReactNodeViewRenderer(ResizableImage);
+  },
+});
 
 const MenuBar = ({ editor }: any) => {
   if (!editor) return null;
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const addLink = () => {
     const url = window.prompt("Enter URL:");
@@ -48,11 +284,26 @@ const MenuBar = ({ editor }: any) => {
     }
   };
 
-  const addImage = () => {
-    const url = window.prompt("Enter image URL:");
-    if (url) {
-      editor.chain().focus().setImage({ src: url }).run();
+  const handleImageChange = (event: any) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 1024 * 1024) {
+      toast.error("Ukuran gambar terlalu besar (max 1MB)");
+      return;
     }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result;
+      if (typeof result === "string") {
+        editor.chain().focus().setImage({ src: result }).run();
+        toast.success("Gambar berhasil ditambahkan");
+      }
+    };
+
+    reader.readAsDataURL(file);
+    event.target.value = "";
   };
 
   return (
@@ -253,6 +504,8 @@ const MenuBar = ({ editor }: any) => {
 
       <div className="w-px h-8 bg-border mx-1" />
 
+
+
       {/* Links & Images */}
       <Button
         type="button"
@@ -263,8 +516,24 @@ const MenuBar = ({ editor }: any) => {
       >
         <LinkIcon className="w-4 h-4" />
       </Button>
-
       <div className="w-px h-8 bg-border mx-1" />
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleImageChange}
+      />
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8"
+        onClick={() => fileInputRef.current?.click()}
+      >
+        <ImageIcon className="w-4 h-4" />
+      </Button>
 
       {/* Horizontal Rule */}
       <Button
@@ -302,9 +571,14 @@ export default function RichTextEditor({
           class: "text-primary underline",
         },
       }),
+      CustomImage.configure({
+        HTMLAttributes: {
+          class: "max-w-full h-auto rounded-lg",
+        },
+      }),
       Underline,
       TextAlign.configure({
-        types: ["heading", "paragraph"],
+        types: ["heading", "paragraph", "image"],
       }),
       Highlight.configure({
         multicolor: false,
@@ -322,8 +596,13 @@ export default function RichTextEditor({
     },
   });
   useEffect(() => {
-    if (editor && content !== editor.getHTML()) {
-      editor.commands.setContent(content || "", { emitUpdate: false });
+    if (!editor) return;
+    if (editor.isFocused) return;
+
+    if (content !== editor.getHTML()) {
+      queueMicrotask(() => {
+        editor.commands.setContent(content || "", { emitUpdate: false });
+      });
     }
   }, [content, editor]);
   return (

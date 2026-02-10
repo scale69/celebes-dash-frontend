@@ -1,12 +1,12 @@
 "use server";
 
-import { BackendError, DeletePayload } from "@/types/data";
+import { DeletePayload } from "@/types/data";
 import axiosInstance from "../instance";
 
 export async function fetchArticles(page: number) {
   const instance = await axiosInstance();
   try {
-    const res = await instance.get(`articles/?page=${page}`);
+    const res = await instance.get(`/api/articles/?page=${page}`);
     return res.data;
   } catch (error) {
     if (error instanceof Error) {
@@ -19,7 +19,7 @@ export async function fetchArticles(page: number) {
 export async function getArticleBySlug(slug?: string) {
   const instance = await axiosInstance();
   try {
-    const res = await instance.get(`articles/${slug}`);
+    const res = await instance.get(`/api/articles/${slug}`);
     return res.data;
   } catch (error: any) {
     if (error.response?.status === 404) {
@@ -33,7 +33,7 @@ export async function bulkDeleteArticle(ids: String[]) {
   const instance = await axiosInstance();
 
   try {
-    const res = await instance.delete(`articles/bulk-delete/`, {
+    const res = await instance.delete(`/api/articles/bulk-delete/`, {
       data: {
         ids: ids,
       },
@@ -70,7 +70,7 @@ export async function deleteBySlugAction(slug: String) {
   const instance = await axiosInstance();
 
   try {
-    const res = await instance.delete(`articles/${slug}/`);
+    const res = await instance.delete(`/api/articles/${slug}/`);
     return res.data;
   } catch (error: any) {
     throw {
@@ -82,7 +82,7 @@ export async function deleteBySlugAction(slug: String) {
 export const postArticle = async (formData: FormData) => {
   const instance = await axiosInstance();
   try {
-    const res = await instance.post(`articles/`, formData, {
+    const res = await instance.post(`/api/articles/`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -100,7 +100,7 @@ export const postArticle = async (formData: FormData) => {
 export const editArticle = async (formData: FormData, slug: string) => {
   const instance = await axiosInstance();
   try {
-    const res = await instance.patch(`articles/${slug}/`, formData, {
+    const res = await instance.patch(`/api/articles/${slug}/`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },

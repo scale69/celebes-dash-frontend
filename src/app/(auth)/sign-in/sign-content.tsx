@@ -66,7 +66,7 @@ function SignContent() {
             setIsLoading(true);
             // Memastikan URL backend valid
             const baseUrl = signInUrl?.endsWith('/') ? signInUrl : `${signInUrl}/`;
-            window.location.href = `${baseUrl}auth/login/google/`;
+            window.location.href = `${baseUrl}/api/auth/login/google/`;
         } catch (err) {
             setIsLoading(false);
             setError("Gagal melakukan login dengan Google. Silakan coba lagi.");

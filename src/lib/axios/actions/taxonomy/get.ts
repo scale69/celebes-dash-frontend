@@ -4,7 +4,7 @@ import axiosInstance from "../../instance";
 export async function fetchArticleStats() {
   const instance = await axiosInstance();
   try {
-    const res = await instance.get(`articles/stats/`);
+    const res = await instance.get(`/api/articles/stats/`);
     return res.data;
   } catch (error) {
     if (error instanceof Error) {

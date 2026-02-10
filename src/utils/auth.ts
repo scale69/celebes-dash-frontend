@@ -6,7 +6,7 @@ import { cache } from "react";
 export const AuthUser = cache(async () => {
   const instance = await axiosInstance();
   try {
-    const user = await instance.get("users/me/");
+    const user = await instance.get("/api/users/me/");
     if (!user.data) return null;
 
     return user.data;

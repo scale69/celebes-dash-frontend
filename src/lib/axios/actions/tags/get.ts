@@ -4,7 +4,7 @@ import axiosInstance from "../../instance";
 export async function fetchTags(page: number) {
   const instance = await axiosInstance();
   try {
-    const res = await instance.get(`tags/?page=${page}`);
+    const res = await instance.get(`/api/tags/?page=${page}`);
     return res.data;
   } catch (error) {
     if (error instanceof Error) {

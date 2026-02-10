@@ -17,18 +17,9 @@ import {
     Dialog,
     DialogContent,
     DialogDescription,
-    DialogFooter,
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -43,47 +34,67 @@ import {
     MoreHorizontal,
     Edit,
     Trash2,
-    Eye,
-    BarChart3,
     ImageOff,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchAds } from "@/lib/axios/actions/ads/get";
 import { SkeletonTable } from "../skeleton/table-skeleton";
-import AddAds from "./add-ads";
 import { updateStatusAds } from "@/lib/axios/actions/ads/patch";
-import EditAds from "./edit-ads";
 import { Ads } from "@/types/data";
-import { deleteAds } from "@/lib/axios/actions/ads/delete";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../ui/alert-dialog";
+import { AlertDialog } from "../ui/alert-dialog";
 import DeleteAds from "./delete-ads";
+import AddOrEditAds from "./add-or-edit-ads";
 
 
 
 type Props = {
-    ad: Ads;
+    adsId: string;
+    adsStatus: boolean;
     onStatusChange: (id: string, newStatus: boolean) => void;
 };
 
 
-export function StatusToggle({ ad, onStatusChange }: Props) {
-    const mutation = useMutation({
-        mutationFn: (newStatus: boolean) => updateStatusAds(newStatus, ad.id),
-        onSuccess: (_res, newStatus) => {
-            // Update parent state
-            onStatusChange(ad.id, newStatus);
-        },
-    });
+
+
+export function StatusToggle({ adsId, adsStatus, onStatusChange }: Props) {
+    const queryClient = useQueryClient();
+
+    const [isChecked, setIsChecked] = useState(adsStatus);
+    const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        setIsChecked(adsStatus);
+    }, [adsStatus]);
+
+    const handleToggle = async (value: boolean) => {
+        setIsLoading(true);
+        try {
+            // Send the new status using FormData instead of a plain object
+            const formData = new FormData();
+            formData.append("status", value ? "true" : "false");
+            await updateStatusAds(formData, adsId);
+            setIsChecked(value);
+            onStatusChange && onStatusChange(adsId, value);
+            queryClient.invalidateQueries({ queryKey: ["ads"] });
+            toast.success(`Ad status updated to ${value ? 'active' : 'inactive'}`);
+        } catch (error) {
+            setIsChecked(!value);
+            toast.error("Failed to update ad status");
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
         <Switch
-            checked={ad.status}
-            onCheckedChange={(value) => mutation.mutate(value)}
-            disabled={mutation.isPending}
+            checked={isChecked}
+            onCheckedChange={handleToggle}
+            disabled={isLoading}
         />
     );
 }
+
 
 
 export default function AdsManagementContent({ adType = "header" }) {
@@ -99,6 +110,8 @@ export default function AdsManagementContent({ adType = "header" }) {
         queryKey: ["ads"],
         queryFn: fetchAds
     })
+
+
 
     const adTypeLabels = {
         header: "Header Ads",
@@ -123,6 +136,8 @@ export default function AdsManagementContent({ adType = "header" }) {
     useEffect(() => {
         if (data) setAdsData(data);
     }, [data]);
+
+
 
     const handleStatusChange = (id: string, newStatus: boolean) => {
         setAdsData((prev) => {
@@ -172,7 +187,7 @@ export default function AdsManagementContent({ adType = "header" }) {
                 </CardHeader>
                 <CardContent>
                     {/* Search */}
-                    <div className="mb-4">
+                    {/* <div className="mb-4">
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                             <Input
@@ -182,14 +197,14 @@ export default function AdsManagementContent({ adType = "header" }) {
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
-                    </div>
+                    </div> */}
 
                     {/* Ads Table */}
                     <div className="rounded-md border">
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Ad Name</TableHead>
+                                    <TableHead>Ads</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead>Placement</TableHead>
                                     <TableHead>Period</TableHead>
@@ -222,7 +237,16 @@ export default function AdsManagementContent({ adType = "header" }) {
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-2">
-                                                <StatusToggle ad={ad} onStatusChange={handleStatusChange} />
+                                                <div className="flex items-center gap-2">
+                                                    <StatusToggle
+                                                        adsId={ad.id}
+                                                        adsStatus={ad.status}
+                                                        onStatusChange={() => handleStatusChange} // fix: provide required prop (noop function)
+                                                    />
+                                                    <Badge variant={ad.status ? "default" : "secondary"}>
+                                                        {ad.status ? "Active" : "Inactive"}
+                                                    </Badge>
+                                                </div>
                                             </div>
                                         </TableCell>
                                         <TableCell>
@@ -296,7 +320,7 @@ export default function AdsManagementContent({ adType = "header" }) {
                         </DialogDescription>
                     </DialogHeader>
                     {(adsData || editingAd) && (
-                        <AddAds
+                        <AddOrEditAds
                             editingAd={!!editingAd}
                             adsData={adsData as Ads}
                             setAdDialog={setAdDialog}
@@ -316,22 +340,6 @@ export default function AdsManagementContent({ adType = "header" }) {
                 )}
             </AlertDialog>
 
-            {/* Tambah Ad Dialog */}
-
-            {/* Tambah Ad Dialog */}
-            {/* <Dialog open={adDialog} onOpenChange={setAdDialog}>
-                <DialogContent className="max-w-2xl">
-                    <DialogHeader>
-                        <DialogTitle>
-                            Create New Ad
-                        </DialogTitle>
-                        <DialogDescription>
-                            Create a new ${adType} ad
-                        </DialogDescription>
-                    </DialogHeader>
-                    <AddAds setAdDialog={setAdDialog} adType={adType} />
-                </DialogContent>
-            </Dialog> */}
         </>
     );
 }

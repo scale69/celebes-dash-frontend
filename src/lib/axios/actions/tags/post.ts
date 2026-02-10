@@ -6,7 +6,7 @@ import axiosInstance from "../../instance";
 export const postTag = async (data: TagFormData) => {
   const instance = await axiosInstance();
   try {
-    const res = await instance.post(`tags/`, data, {
+    const res = await instance.post(`/api/tags/`, data, {
       headers: {
         "Content-Type": "application/json",
       },

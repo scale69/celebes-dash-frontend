@@ -21,15 +21,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useUser } from "@/lib/axios/actions/users/useUser";
+import { handleLogout } from "@/lib/axios/actions/logout";
 
 export function UserNav() {
 
   const { user } = useUser()
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL
 
-  const handleLogout = () => {
-    window.location.href = `${backendUrl}auth/logout/`;
-  };
   return (
     <DropdownMenu>
       <TooltipProvider disableHoverableContent>

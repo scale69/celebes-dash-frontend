@@ -124,6 +124,9 @@ export default function AddArticleOrEditArticle({ slug, title }: { slug: string,
         mutation.mutate(formData, {
             onSuccess: () => router.push("/articles"),
         });
+
+
+
     };
 
     const handleAddTag = (e: any) => {
@@ -192,7 +195,20 @@ export default function AddArticleOrEditArticle({ slug, title }: { slug: string,
                                 control={control}
                                 render={({ field }) => (
                                     <Suspense fallback={<div>Loading editor...</div>}>
-                                        <RichTextEditor content={field.value ?? ""} onChange={field.onChange} />
+                                        <RichTextEditor
+                                            config={{
+                                                // Enable image resize
+                                                image: {
+                                                    resize: true,           // ← CRITICAL
+                                                    resizeMode: 'scale', // atau 'scale'
+                                                    toolbar: ['imageResize', 'imageAlign'],
+                                                },
+                                                // Jika pakai plugins
+                                                plugins: {
+                                                    imageResize: true,      // ← CRITICAL
+                                                }
+                                            }}
+                                            content={field.value ?? ""} onChange={field.onChange} />
                                     </Suspense>
                                 )}
                             />

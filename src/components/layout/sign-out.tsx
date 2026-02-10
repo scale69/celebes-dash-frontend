@@ -38,7 +38,7 @@ export default function SignOut({ isOpen }: MenuProps) {
                   isOpen === false ? "opacity-0 hidden" : "opacity-100"
                 )}
               >
-                Sign out
+                Sign out tes
               </p>
             </Button>
           </TooltipTrigger>

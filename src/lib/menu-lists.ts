@@ -117,36 +117,36 @@ export function getMenuList(pathname: string): Group[] {
       : []),
 
     // Hanya admin yang bisa akses menu Settings
-    ...(user?.role === "admin"
-      ? [
-          {
-            groupLabel: "Settings",
-            menus: [
-              {
-                href: "/users",
-                label: "Users / Authors",
-                icon: Users,
-              },
-              {
-                href: "/settings",
-                label: "Settings",
-                icon: Settings,
-              },
-            ],
-          },
-        ]
-      : [
-          {
-            groupLabel: "Settings",
-            menus: [
-              {
-                href: "/users",
-                label: "Account",
-                icon: Users,
-              },
-            ],
-          },
-        ]),
+    // ...(user?.role === "admin"
+    //   ? [
+    //       {
+    //         groupLabel: "Settings",
+    //         menus: [
+    //           {
+    //             href: "/users",
+    //             label: "Users / Authors",
+    //             icon: Users,
+    //           },
+    //           {
+    //             href: "/settings",
+    //             label: "Settings",
+    //             icon: Settings,
+    //           },
+    //         ],
+    //       },
+    //     ]
+    //   : [
+    //       {
+    //         groupLabel: "Settings",
+    //         menus: [
+    //           {
+    //             href: "/users",
+    //             label: "Account",
+    //             icon: Users,
+    //           },
+    //         ],
+    //       },
+    //     ]),
   ];
 
   // return [

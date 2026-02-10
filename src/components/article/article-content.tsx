@@ -1,7 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -35,35 +34,21 @@ import {
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
+
 } from "@/components/ui/alert-dialog";
 import {
   Plus,
-  Search,
   MoreHorizontal,
   Edit,
-  Eye,
   Trash2,
-  FileText,
-  ChevronLeft,
-  ChevronRight,
   ArrowLeft,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { SkeletonArticles } from "../skeleton/article-skeleton";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArticlesResponse, Category, ResultArtilce, Tag } from "@/types/data";
 import { SkeletonTable } from "../skeleton/table-skeleton";
 import NoData from "../layout/no-data";
 import {
-  bulkDeleteArticle,
   deleteBySlugAction,
   fetchArticles,
 } from "@/lib/axios/actions/articles";
@@ -77,6 +62,8 @@ export default function ArticleContent() {
   const [filteredArticles, setFilteredArticles] = useState<String>("");
   const [slug, setSlug] = useState("");
   const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>();
+
+
 
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -124,13 +111,13 @@ export default function ArticleContent() {
       </div>
       <Card>
         <CardHeader>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex justify-between gap-2  md:gap-4 w-full items-start ">
             <div className="flex items-center gap-2">
               <Select
                 value={String(filteredArticles) || "all"}
                 onValueChange={(value) => setFilteredArticles(value as String)}
               >
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="text-xs md:text-sm w-40">
                   <SelectValue placeholder="Filter" />
                 </SelectTrigger>
                 <SelectContent>
@@ -140,12 +127,12 @@ export default function ArticleContent() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">
-                {data?.results.length} articles / page
+            <div className="flex md:flex-col  flex-col-reverse  lg:flex-row items-end md:items-center gap-2 md:gap-4">
+              <span className="text-xs lg:text-sm text-muted-foreground">
+                {data?.count} articles
               </span>
               <Button variant="outline" asChild>
-                <Link href={"/articles/add"}>
+                <Link href={"/articles/add"} className="text-xs md:text-sm">
                   <Plus className="w-4 h-4 mr-2" /> Add Article
                 </Link>
               </Button>

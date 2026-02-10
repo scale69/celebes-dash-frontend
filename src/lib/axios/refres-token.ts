@@ -23,7 +23,7 @@ api.interceptors.response.use(
       original._retry = true;
       try {
         const res = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}token/refresh/`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/token/refresh/`,
           {},
           { withCredentials: true }, // kirim refresh token cookie
         );

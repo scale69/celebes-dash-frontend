@@ -5,7 +5,7 @@ import axiosInstance from "../../instance";
 export const updateUser = async (data: UserFormData, id: string) => {
   const instance = await axiosInstance();
   try {
-    const res = await instance.patch(`users/${id}/`, data, {
+    const res = await instance.patch(`/api/users/${id}/`, data, {
       headers: {
         "Content-Type": "application/json",
       },

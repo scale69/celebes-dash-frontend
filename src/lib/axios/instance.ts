@@ -2,7 +2,6 @@ import "server-only";
 
 import axios from "axios";
 import { cookies } from "next/headers";
-import { useAuthStore } from "../authStore";
 
 const axiosInstance = async () => {
   // Ambil token dari cookie

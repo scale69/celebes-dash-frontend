@@ -1,7 +1,8 @@
-import AuthProvider from "@/utils/providers/AuthProvider";
 import "../globals.css";
 
 import AdminPanelLayout from "@/components/admin-panel/adimin-panel-layout";
+// import "@/lib/axios/interceptor"
+
 
 export default function DasboradLayout({
   children,
@@ -11,9 +12,7 @@ export default function DasboradLayout({
   return (
 
     <AdminPanelLayout>
-      <AuthProvider>
-        {children}
-      </AuthProvider>
+      {children}
     </AdminPanelLayout>
   )
 }

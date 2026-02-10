@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Admin Celebes",
-  description: "Clebes Nusantara Sultra",
+  title: "Celebes Sultra",
+  description: "Celebes Nusantara Sultra",
 };
 export default function RootLayout({
   children,

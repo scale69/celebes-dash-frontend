@@ -8,7 +8,7 @@ export const postUser = async (data: UserFormData) => {
 
   const instance = await axiosInstance();
   try {
-    const res = await instance.post(`users/`, data, {
+    const res = await instance.post(`/api/users/`, data, {
       headers: {
         "Content-Type": "application/json",
       },

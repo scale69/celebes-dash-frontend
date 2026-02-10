@@ -5,7 +5,7 @@ import axiosInstance from "../../instance";
 export const deleteUser = async (id: string) => {
   const instance = await axiosInstance();
   try {
-    const res = await instance.delete(`users/${id}/`);
+    const res = await instance.delete(`/api/users/${id}/`);
     return res.data;
   } catch (error) {
     if (error instanceof Error) {
