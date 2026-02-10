@@ -166,9 +166,7 @@ const ResizableImage = ({ node, updateAttributes, selected }: any) => {
     justify: "mx-auto",
   }[textAlign as string] || "";
 
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL;
   const imageUrl = src
-  // src?.startsWith("data:") ? src : `${backendUrl}${src}`;
 
   return (
     <NodeViewWrapper
