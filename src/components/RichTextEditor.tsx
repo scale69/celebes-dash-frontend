@@ -200,104 +200,42 @@ const ResizableImage = ({ node, updateAttributes, selected }: any) => {
     </NodeViewWrapper>
   );
 };
-const CustomImage = Image.extend({
-  addAttributes() {
-    return {
-      ...this.parent?.(),
-
-      textAlign: {
-        default: null,
-        parseHTML: element => element.style.textAlign || null,
-        renderHTML: attributes => {
-          if (!attributes.textAlign) return {};
-          return { style: `text-align:${attributes.textAlign};` };
-        },
-      },
-
-      width: {
-        default: null,
-        parseHTML: element => {
-          const w = element.getAttribute("width");
-          return w ? Number(w) : null;
-        },
-        renderHTML: attrs =>
-          attrs.width
-            ? {
-              width: attrs.width,
-              style: `width:${attrs.width}px;height:auto;`,
-            }
-            : {},
-      },
-    };
-  },
-
-  renderHTML({ HTMLAttributes }) {
-    const { textAlign, style, ...rest } = HTMLAttributes;
-
-    let alignStyle = "";
-
-    if (textAlign === "center") {
-      alignStyle = "display:block;margin-left:auto;margin-right:auto;";
-    } else if (textAlign === "right") {
-      alignStyle = "display:block;margin-left:auto;";
-    } else if (textAlign === "left") {
-      alignStyle = "display:block;margin-right:auto;";
-    }
-
-    return [
-      "img",
-      mergeAttributes(rest, {
-        style: `${style || ""}${alignStyle}`,
-      }),
-    ];
-  },
-
-  addNodeView() {
-    return ReactNodeViewRenderer(ResizableImage);
-  },
-});
-
-
 // const CustomImage = Image.extend({
 //   addAttributes() {
 //     return {
 //       ...this.parent?.(),
+
+//       textAlign: {
+//         default: null,
+//         parseHTML: element => element.style.textAlign || null,
+//         renderHTML: attributes => {
+//           if (!attributes.textAlign) return {};
+//           return { style: `text-align:${attributes.textAlign};` };
+//         },
+//       },
+
 //       width: {
 //         default: null,
-//         parseHTML: (element) => {
-//           // Parse dari attribute width ATAU dari inline style
-//           const widthAttr = element.getAttribute("width");
-//           if (widthAttr) {
-//             const parsed = Number(widthAttr);
-//             return Number.isFinite(parsed) ? parsed : null;
-//           }
-
-//           // Coba parse dari style="width: 300px"
-//           const styleWidth = element.style.width;
-//           if (styleWidth) {
-//             const parsed = parseInt(styleWidth);
-//             return Number.isFinite(parsed) ? parsed : null;
-//           }
-
-//           return null;
+//         parseHTML: element => {
+//           const w = element.getAttribute("width");
+//           return w ? Number(w) : null;
 //         },
-//         renderHTML: (attributes) => {
-//           if (!attributes.width) return {};
-
-//           // ✅ PENTING: Render sebagai inline style DAN attribute
-//           // Inline style memastikan width bekerja di frontend
-//           return {
-//             width: attributes.width,
-//             style: `width: ${attributes.width}px; height: auto;`
-//           };
-//         },
+//         renderHTML: attrs =>
+//           attrs.width
+//             ? {
+//               width: attrs.width,
+//               style: `width:${attrs.width}px;height:auto;`,
+//             }
+//             : {},
 //       },
 //     };
 //   },
+
 //   renderHTML({ HTMLAttributes }) {
 //     const { textAlign, style, ...rest } = HTMLAttributes;
 
 //     let alignStyle = "";
+
 //     if (textAlign === "center") {
 //       alignStyle = "display:block;margin-left:auto;margin-right:auto;";
 //     } else if (textAlign === "right") {
@@ -313,10 +251,72 @@ const CustomImage = Image.extend({
 //       }),
 //     ];
 //   },
+
 //   addNodeView() {
 //     return ReactNodeViewRenderer(ResizableImage);
 //   },
 // });
+
+
+const CustomImage = Image.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      width: {
+        default: null,
+        parseHTML: (element) => {
+          // Parse dari attribute width ATAU dari inline style
+          const widthAttr = element.getAttribute("width");
+          if (widthAttr) {
+            const parsed = Number(widthAttr);
+            return Number.isFinite(parsed) ? parsed : null;
+          }
+
+          // Coba parse dari style="width: 300px"
+          const styleWidth = element.style.width;
+          if (styleWidth) {
+            const parsed = parseInt(styleWidth);
+            return Number.isFinite(parsed) ? parsed : null;
+          }
+
+          return null;
+        },
+        renderHTML: (attributes) => {
+          if (!attributes.width) return {};
+
+          // ✅ PENTING: Render sebagai inline style DAN attribute
+          // Inline style memastikan width bekerja di frontend
+          return {
+            width: attributes.width,
+            style: `width: ${attributes.width}px; height: auto;`
+          };
+        },
+      },
+    };
+  },
+  renderHTML({ HTMLAttributes }) {
+    const { textAlign, style, ...rest } = HTMLAttributes;
+
+    let alignStyle = "";
+    if (textAlign === "center") {
+      alignStyle = "display:block;margin-left:auto;margin-right:auto;";
+    } else if (textAlign === "right") {
+      alignStyle = "display:block;margin-left:auto;";
+    } else if (textAlign === "left") {
+      alignStyle = "display:block;margin-right:auto;";
+    }
+
+    return [
+      "img",
+      mergeAttributes(rest, {
+        style: `${style || ""}${alignStyle}`,
+      }),
+    ];
+  },
+  addNodeView() {
+    return ReactNodeViewRenderer(ResizableImage);
+  },
+});
 
 const MenuBar = ({ editor }: any) => {
   if (!editor) return null;
