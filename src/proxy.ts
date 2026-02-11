@@ -5,29 +5,29 @@ import type { NextRequest } from "next/server";
 // This function can be marked `async` if using `await` inside
 export async function proxy(request: NextRequest) {
   const isLoginPage = request.nextUrl.pathname === "/sign-in";
-  // const token = request.cookies.get("access_token")?.value;
-  // const JWT_SECRET = process.env.JWT_SECRET;
-  // // 1. Jika TIDAK ADA token dan user BUKAN di halaman login, tendang ke login
-  // if (!token && isLoginPage) {
-  //   return NextResponse.next();
-  // }
-  // // 2. Jika ADA token dan user mencoba akses halaman login, lempar ke dashboard/home
-  // // Agar user yang sudah login tidak bisa buka halaman login lagi
-  // if (!token && !isLoginPage) {
-  //   return NextResponse.redirect(new URL("/sign-in", request.url));
-  // }
-  // try {
-  //   const secret_key = new TextEncoder().encode(JWT_SECRET);
-  //   await jwtVerify(String(token), secret_key);
-  //   if (isLoginPage) {
-  //     return NextResponse.redirect(new URL("/", request.url));
-  //   }
-  //   return NextResponse.next();
-  // } catch (error) {
-  //   const response = NextResponse.redirect(new URL("/sign-in", request.url));
-  //   response.cookies.delete("access_token");
-  //   return response;
-  // }
+  const token = request.cookies.get("access_token")?.value;
+  const JWT_SECRET = process.env.JWT_SECRET;
+  // 1. Jika TIDAK ADA token dan user BUKAN di halaman login, tendang ke login
+  if (!token && isLoginPage) {
+    return NextResponse.next();
+  }
+  // 2. Jika ADA token dan user mencoba akses halaman login, lempar ke dashboard/home
+  // Agar user yang sudah login tidak bisa buka halaman login lagi
+  if (!token && !isLoginPage) {
+    return NextResponse.redirect(new URL("/sign-in", request.url));
+  }
+  try {
+    const secret_key = new TextEncoder().encode(JWT_SECRET);
+    await jwtVerify(String(token), secret_key);
+    if (isLoginPage) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+    return NextResponse.next();
+  } catch (error) {
+    const response = NextResponse.redirect(new URL("/sign-in", request.url));
+    response.cookies.delete("access_token");
+    return response;
+  }
 
   // untuk debug di local host
 
@@ -43,29 +43,29 @@ export async function proxy(request: NextRequest) {
 
   // return NextResponse.next();
 
-  const { pathname } = request.nextUrl;
+  // const { pathname } = request.nextUrl;
 
-  const publicRoutes = ["/sign-in"];
-  const isPublicRoute = publicRoutes.some((route) =>
-    pathname.startsWith(route),
-  );
+  // const publicRoutes = ["/sign-in"];
+  // const isPublicRoute = publicRoutes.some((route) =>
+  //   pathname.startsWith(route),
+  // );
 
-  // Cek apakah ada token (bisa access atau refresh)
-  const hasAccessToken = request.cookies.has("access_token");
-  const hasRefreshToken = request.cookies.has("refresh_token");
-  const isAuthenticated = hasAccessToken || hasRefreshToken;
+  // // Cek apakah ada token (bisa access atau refresh)
+  // const hasAccessToken = request.cookies.has("access_token");
+  // const hasRefreshToken = request.cookies.has("refresh_token");
+  // const isAuthenticated = hasAccessToken || hasRefreshToken;
 
-  // Belum login + bukan halaman publik → redirect ke sign-in
-  if (!isAuthenticated && !isPublicRoute) {
-    return NextResponse.redirect(new URL("/sign-in", request.url));
-  }
+  // // Belum login + bukan halaman publik → redirect ke sign-in
+  // if (!isAuthenticated && !isPublicRoute) {
+  //   return NextResponse.redirect(new URL("/sign-in", request.url));
+  // }
 
-  // Sudah login + akses sign-in → redirect ke dashboard
-  if (isAuthenticated && pathname === "/sign-in") {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
+  // // Sudah login + akses sign-in → redirect ke dashboard
+  // if (isAuthenticated && pathname === "/sign-in") {
+  //   return NextResponse.redirect(new URL("/dashboard", request.url));
+  // }
 
-  return NextResponse.next();
+  // return NextResponse.next();
 }
 // Alternatively, you can use a default export:
 // export default function proxy(request: NextRequest) { ... }
