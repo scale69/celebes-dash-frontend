@@ -108,8 +108,7 @@ const ResizableImage = ({ node, updateAttributes, selected }: any) => {
   const widthRef = useRef<number | null>(width);
 
   useEffect(() => {
-    const w =
-      typeof node?.attrs?.width === "number" ? node.attrs.width : null;
+    const w = typeof node?.attrs?.width === "number" ? node.attrs.width : null;
     setWidth(w);
     widthRef.current = w;
   }, [node?.attrs?.width]);
@@ -119,36 +118,19 @@ const ResizableImage = ({ node, updateAttributes, selected }: any) => {
     e.stopPropagation();
 
     const startX = e.clientX;
-
-    const startWidth =
-      widthRef.current ??
-      containerRef.current?.getBoundingClientRect().width ??
-      300;
-
+    const startWidth = widthRef.current ?? containerRef.current?.getBoundingClientRect().width ?? 300;
     const editorEl = containerRef.current?.closest(".ProseMirror");
-    const parentWidth =
-      editorEl?.getBoundingClientRect().width ?? window.innerWidth;
+    const parentWidth = editorEl?.getBoundingClientRect().width ?? window.innerWidth;
 
     const onMove = (ev: MouseEvent) => {
-      const next = clamp(
-        startWidth + (ev.clientX - startX),
-        80,
-        parentWidth
-      );
-
+      const next = clamp(startWidth + (ev.clientX - startX), 80, parentWidth);
       widthRef.current = next;
       setWidth(next);
     };
 
     const onUp = () => {
-      const finalWidth = Math.round(
-        widthRef.current ??
-        containerRef.current?.getBoundingClientRect().width ??
-        startWidth
-      );
-
+      const finalWidth = Math.round(widthRef.current ?? startWidth);
       updateAttributes({ width: finalWidth });
-
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
     };
@@ -159,164 +141,132 @@ const ResizableImage = ({ node, updateAttributes, selected }: any) => {
 
   const { textAlign, src } = node.attrs;
 
-  const alignClass = {
-    left: "mr-auto",
-    right: "ml-auto",
-    center: "mx-auto",
-    justify: "mx-auto",
-  }[textAlign as string] || "";
 
-  const imageUrl = src
+  // ✅ Style inline untuk wrapper (alignment)
+  // const wrapperStyle = textAlign === "center"
+  //   ? "text-align: center;"
+  //   : textAlign === "right"
+  //     ? "text-align: right;"
+  //     : textAlign === "left"
+  //       ? "text-align: left;"
+  //       : "";
 
   return (
     <NodeViewWrapper
-      ref={containerRef}
       contentEditable={false}
-      className={`relative my-4 max-w-full block ${alignClass}`}
-      data-selected={selected ? "true" : "false"}
-      style={{
-        width: typeof width === "number" ? `${width}px` : undefined,
-      }}
+      className="image-wrapper my-4"
+      style={{ textAlign: textAlign || "left" }} // ✅ Set textAlign di style object
     >
-      <img
-        src={imageUrl}
-        alt={node.attrs.alt || ""}
-        title={node.attrs.title || ""}
-        className="max-w-full h-auto rounded-lg block"
-        draggable={false}
-      />
-
-      {selected && (
-        <Scaling
-          size={25}
-          role="button"
-          aria-label="Resize image"
-          tabIndex={-1}
-          onMouseDown={startResize}
-          className="absolute right-1 bottom-1 rotate-90 text-sky-500  cursor-se-resize
-                     rounded-sm bg-white m-2 border shadow opacity-90 hover:opacity-100"
+      <div
+        ref={containerRef}
+        className="relative inline-block"
+        data-selected={selected ? "true" : "false"}
+        style={{
+          width: typeof width === "number" ? `${width}px` : undefined,
+        }}
+      >
+        <img
+          src={src}
+          alt={node.attrs.alt || ""}
+          title={node.attrs.title || ""}
+          className="max-w-full h-auto rounded-lg block"
+          draggable={false}
         />
-      )}
+
+        {selected && (
+          <Scaling
+            size={25}
+            role="button"
+            aria-label="Resize image"
+            tabIndex={-1}
+            onMouseDown={startResize}
+            className="absolute right-1 bottom-1 rotate-90 text-sky-500 cursor-se-resize
+                       rounded-sm bg-white m-2 border shadow opacity-90 hover:opacity-100"
+          />
+        )}
+      </div>
     </NodeViewWrapper>
   );
 };
-// const CustomImage = Image.extend({
-//   addAttributes() {
-//     return {
-//       ...this.parent?.(),
-
-//       textAlign: {
-//         default: null,
-//         parseHTML: element => element.style.textAlign || null,
-//         renderHTML: attributes => {
-//           if (!attributes.textAlign) return {};
-//           return { style: `text-align:${attributes.textAlign};` };
-//         },
-//       },
-
-//       width: {
-//         default: null,
-//         parseHTML: element => {
-//           const w = element.getAttribute("width");
-//           return w ? Number(w) : null;
-//         },
-//         renderHTML: attrs =>
-//           attrs.width
-//             ? {
-//               width: attrs.width,
-//               style: `width:${attrs.width}px;height:auto;`,
-//             }
-//             : {},
-//       },
-//     };
-//   },
-
-//   renderHTML({ HTMLAttributes }) {
-//     const { textAlign, style, ...rest } = HTMLAttributes;
-
-//     let alignStyle = "";
-
-//     if (textAlign === "center") {
-//       alignStyle = "display:block;margin-left:auto;margin-right:auto;";
-//     } else if (textAlign === "right") {
-//       alignStyle = "display:block;margin-left:auto;";
-//     } else if (textAlign === "left") {
-//       alignStyle = "display:block;margin-right:auto;";
-//     }
-
-//     return [
-//       "img",
-//       mergeAttributes(rest, {
-//         style: `${style || ""}${alignStyle}`,
-//       }),
-//     ];
-//   },
-
-//   addNodeView() {
-//     return ReactNodeViewRenderer(ResizableImage);
-//   },
-// });
-
-
 const CustomImage = Image.extend({
   addAttributes() {
     return {
       ...this.parent?.(),
-      width: {
-        default: null,
-        parseHTML: (element) => {
-          // Parse dari attribute width ATAU dari inline style
-          const widthAttr = element.getAttribute("width");
-          if (widthAttr) {
-            const parsed = Number(widthAttr);
-            return Number.isFinite(parsed) ? parsed : null;
-          }
 
-          // Coba parse dari style="width: 300px"
-          const styleWidth = element.style.width;
-          if (styleWidth) {
-            const parsed = parseInt(styleWidth);
-            return Number.isFinite(parsed) ? parsed : null;
-          }
+      textAlign: {
+        default: null,
+        parseHTML: element => {
+          const wrapper = element.parentElement;
+          if (!wrapper) return null;
+
+          const classList = wrapper.classList;
+
+          if (classList.contains("justify-center")) return "center";
+          if (classList.contains("justify-end")) return "right";
+          if (classList.contains("justify-start")) return "left";
 
           return null;
         },
-        renderHTML: (attributes) => {
-          if (!attributes.width) return {};
+      },
 
-          // ✅ PENTING: Render sebagai inline style DAN attribute
-          // Inline style memastikan width bekerja di frontend
-          return {
-            width: attributes.width,
-            style: `width: ${attributes.width}px; height: auto;`
-          };
+      width: {
+        default: null,
+        parseHTML: element => {
+          const w = element.getAttribute("width");
+          return w ? Number(w) : null;
         },
+        renderHTML: attrs =>
+          attrs.width
+            ? {
+              width: attrs.width,
+              style: `width:${attrs.width}px;height:auto;`,
+            }
+            : {},
       },
     };
   },
-  renderHTML({ HTMLAttributes }) {
-    const { textAlign, style, ...rest } = HTMLAttributes;
 
-    let alignStyle = "";
-    if (textAlign === "center") {
-      alignStyle = "display:block;margin-left:auto;margin-right:auto;";
-    } else if (textAlign === "right") {
-      alignStyle = "display:block;margin-left:auto;";
-    } else if (textAlign === "left") {
-      alignStyle = "display:block;margin-right:auto;";
-    }
+  renderHTML({ HTMLAttributes }) {
+    const { textAlign, width, style, class: cls, ...rest } = HTMLAttributes;
+
+    // wrapper classes
+    const justifyClass = (
+      textAlign === "center" ? "justify-center" :
+        textAlign === "right" ? "justify-end" :
+          "justify-start"
+    );
+
+    const wrapperClass = ["image-wrapper", "w-full", "flex", justifyClass].join(" ");
+
+    // img style
+    let imgStyle = style || "";
+    if (width) imgStyle += `width:${width}px;height:auto;`;
 
     return [
-      "img",
-      mergeAttributes(rest, {
-        style: `${style || ""}${alignStyle}`,
-      }),
+      "div",
+      {
+        class: wrapperClass,
+        style: `text-align:${textAlign || "left"};`, // optional
+      },
+      [
+        "img",
+        mergeAttributes(rest, {
+          class: `rounded-lg max-w-full h-auto ${cls || ""}`,
+          style: imgStyle || undefined,
+          width: width || undefined,
+        }),
+      ],
     ];
   },
+
+
   addNodeView() {
     return ReactNodeViewRenderer(ResizableImage);
   },
 });
+
+
+
 
 const MenuBar = ({ editor }: any) => {
   if (!editor) return null;
